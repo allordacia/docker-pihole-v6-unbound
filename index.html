@@ -1,0 +1,2896 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sessions</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#faf6f1;--warm-white:#fff9f4;--blush:#e8c4b0;--blush-dark:#d4a090;
+  --rose:#c47a6a;--rose-deep:#a85f50;--muted:#9e8880;--text:#3d2c28;
+  --text-light:#7a5e58;--border:#e0cdc6;--card:#fffbf8;--shadow:rgba(180,120,100,0.12);
+  --phase-men:#d4a0a0;--phase-fol:#a0c4a0;--phase-ovu:#c4b870;--phase-lut:#a0a8c4;--phase-pla:#b0b0b0;
+  --teal:#7ab8b0;--teal-light:#d0ecea;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;padding-bottom:80px}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.4}
+.app{position:relative;z-index:1;max-width:480px;margin:0 auto}
+
+.header{padding:40px 24px 20px;text-align:center}
+.header::after{content:’’;display:block;width:40px;height:1px;background:var(–blush-dark);margin:14px auto 0}
+.header h1{font-family:‘Cormorant Garamond’,serif;font-size:2rem;font-weight:300;letter-spacing:0.08em}
+.header p{font-size:0.75rem;color:var(–muted);letter-spacing:0.12em;text-transform:uppercase;margin-top:6px;font-weight:300}
+
+.nav{display:flex;margin:0 24px 20px;background:var(–border);border-radius:12px;padding:3px;gap:2px}
+.nav button{flex:1;padding:9px 2px;border:none;background:transparent;border-radius:10px;font-family:‘DM Sans’,sans-serif;font-size:0.68rem;font-weight:400;color:var(–muted);cursor:pointer;transition:all 0.2s;letter-spacing:0.02em}
+.nav button.active{background:var(–card);color:var(–rose);font-weight:500;box-shadow:0 1px 6px var(–shadow)}
+
+.view{display:none;padding:0 24px}
+.view.active{display:block}
+
+.form-section{background:var(–card);border-radius:20px;padding:22px;margin-bottom:14px;box-shadow:0 2px 16px var(–shadow);border:1px solid var(–border)}
+.section-title{font-family:‘Cormorant Garamond’,serif;font-size:1.1rem;font-weight:400;font-style:italic;color:var(–rose);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(–border)}
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+label{display:block;font-size:0.71rem;text-transform:uppercase;letter-spacing:0.1em;color:var(–muted);margin-bottom:7px;font-weight:500}
+
+input[type=range]{width:100%;-webkit-appearance:none;height:4px;background:var(–border);border-radius:2px;outline:none;display:block;margin-top:4px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(–rose);cursor:pointer;box-shadow:0 1px 6px rgba(196,122,106,0.4);transition:transform 0.15s}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(1.2)}
+.slider-row{display:flex;align-items:center;gap:10px}
+.slider-row input[type=range]{flex:1}
+.slider-end{font-size:0.68rem;color:var(–muted);white-space:nowrap}
+.dual-slider{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+
+.pill-group{display:flex;flex-wrap:wrap;gap:7px}
+.pill{padding:6px 13px;border-radius:20px;border:1.5px solid var(–border);background:transparent;font-family:‘DM Sans’,sans-serif;font-size:0.76rem;color:var(–text-light);cursor:pointer;transition:all 0.18s;font-weight:400}
+.pill.selected{background:var(–blush);border-color:var(–rose);color:var(–rose-deep);font-weight:500}
+.pill.yes-pill.selected{background:#d4e8d0;border-color:#7ab870;color:#3a6e38}
+.pill.no-pill.selected{background:#f0d8d8;border-color:#c07070;color:#7a3030}
+
+/* Mood pill color variants */
+.pill.mood-stress.selected{background:#f0dcd0;border-color:#c08060;color:#7a4030}
+.pill.mood-tender.selected{background:#f0d8e8;border-color:#c080a0;color:#7a3060}
+.pill.mood-energy.selected{background:#d8f0d8;border-color:#60b060;color:#206020}
+.pill.mood-foggy.selected{background:#e8e8e8;border-color:#909090;color:#404040}
+.pill.mood-happy.selected{background:#f0ecd0;border-color:#c0a840;color:#605010}
+.pill.mood-irritable.selected{background:#f0d8d0;border-color:#c06040;color:#7a2010}
+
+textarea{width:100%;padding:11px 13px;border-radius:12px;border:1.5px solid var(–border);background:var(–warm-white);font-family:‘DM Sans’,sans-serif;font-size:0.86rem;color:var(–text);resize:none;outline:none;line-height:1.6;transition:border-color 0.2s;-webkit-appearance:none}
+textarea:focus{border-color:var(–blush-dark)}
+textarea::placeholder{color:var(–muted)}
+
+select{width:100%;padding:10px 13px;border-radius:12px;border:1.5px solid var(–border);background:var(–warm-white);font-family:‘DM Sans’,sans-serif;font-size:0.86rem;color:var(–text);outline:none;-webkit-appearance:none;appearance:none;background-image:url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘12’ height=‘8’ viewBox=‘0 0 12 8’%3E%3Cpath d=‘M1 1l5 5 5-5’ stroke=’%239e8880’ stroke-width=‘1.5’ fill=‘none’ stroke-linecap=‘round’/%3E%3C/svg%3E”);background-repeat:no-repeat;background-position:right 13px center;transition:border-color 0.2s}
+select:focus{border-color:var(–blush-dark)}
+
+input[type=date]{width:100%;padding:10px 13px;border-radius:12px;border:1.5px solid var(–border);background:var(–warm-white);font-family:‘DM Sans’,sans-serif;font-size:0.86rem;color:var(–text);outline:none;-webkit-appearance:none;transition:border-color 0.2s}
+input[type=date]:focus{border-color:var(–blush-dark)}
+
+.num-input{width:68px;padding:10px 13px;border-radius:12px;border:1.5px solid var(–border);background:var(–warm-white);font-family:‘DM Sans’,sans-serif;font-size:0.86rem;color:var(–text);outline:none;-webkit-appearance:none;text-align:center;transition:border-color 0.2s}
+.num-input:focus{border-color:var(–blush-dark)}
+.inline-row{display:flex;gap:10px;align-items:center}
+.inline-row span{font-size:0.78rem;color:var(–muted)}
+
+.btn-primary{width:100%;padding:15px;border-radius:16px;border:none;background:linear-gradient(135deg,var(–rose),var(–rose-deep));color:white;font-family:‘DM Sans’,sans-serif;font-size:0.88rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 20px rgba(196,122,106,0.35);transition:all 0.2s;margin-top:8px}
+.btn-primary:active{transform:scale(0.98)}
+.btn-secondary{width:100%;padding:12px;border-radius:14px;border:1.5px solid var(–border);background:transparent;color:var(–text-light);font-family:‘DM Sans’,sans-serif;font-size:0.8rem;font-weight:500;cursor:pointer;margin-top:8px;transition:all 0.2s}
+.btn-secondary:active{background:var(–cream)}
+.btn-teal{width:100%;padding:15px;border-radius:16px;border:none;background:linear-gradient(135deg,var(–teal),#5a9890);color:white;font-family:‘DM Sans’,sans-serif;font-size:0.88rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 16px rgba(122,184,176,0.35);transition:all 0.2s;margin-top:8px}
+.btn-teal:active{transform:scale(0.98)}
+
+/* Pump time banners */
+.pump-banner{border-radius:16px;padding:14px 18px;margin-bottom:12px;border:1px solid var(–border);background:var(–card);box-shadow:0 2px 10px var(–shadow)}
+.pump-banner-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pump-stat{text-align:center}
+.pump-stat-val{font-family:‘Cormorant Garamond’,serif;font-size:1.8rem;font-weight:300;color:var(–teal);line-height:1}
+.pump-stat-label{font-size:0.66rem;text-transform:uppercase;letter-spacing:0.1em;color:var(–muted);margin-top:3px;font-weight:500}
+.pump-divider{width:1px;background:var(–border);margin:4px 0}
+
+/* Cycle banner */
+.cycle-banner{border-radius:16px;padding:14px 18px;margin-bottom:12px;box-shadow:0 2px 10px var(–shadow);border:1px solid var(–border)}
+.cycle-banner.menstrual{background:linear-gradient(135deg,#f5e8e8,#ffe0e0);border-color:var(–phase-men)}
+.cycle-banner.follicular{background:linear-gradient(135deg,#e8f5e8,#e0ffe8);border-color:var(–phase-fol)}
+.cycle-banner.ovulatory{background:linear-gradient(135deg,#f5f0e0,#fff8d0);border-color:var(–phase-ovu)}
+.cycle-banner.luteal{background:linear-gradient(135deg,#e8e8f5,#e8e8ff);border-color:var(–phase-lut)}
+.cycle-banner.placebo{background:linear-gradient(135deg,#f0f0f0,#e8e8e8);border-color:var(–phase-pla)}
+.cycle-banner.unset{background:var(–card)}
+.banner-row{display:flex;justify-content:space-between;align-items:flex-start}
+.banner-phase{font-family:‘Cormorant Garamond’,serif;font-size:1.2rem;font-weight:400;color:var(–text)}
+.banner-day{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(–muted);margin-top:3px}
+.banner-note{font-size:0.76rem;color:var(–text-light);margin-top:6px;font-style:italic;line-height:1.4}
+.banner-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.cycle-wheel-wrap{margin:10px 0 2px;position:relative;height:7px;border-radius:4px;overflow:hidden;background:var(–border)}
+.cycle-wheel-track{position:absolute;top:0;left:0;height:100%;border-radius:4px}
+.cycle-wheel-marker{position:absolute;top:-2.5px;width:12px;height:12px;border-radius:50%;background:var(–rose);border:2px solid white;box-shadow:0 1px 4px var(–shadow);transform:translateX(-50%)}
+
+/* Timer */
+.timer-card{background:linear-gradient(135deg,var(–blush) 0%,#f0d5c8 100%);border-radius:20px;padding:22px;margin-bottom:14px;text-align:center;box-shadow:0 2px 16px var(–shadow)}
+.timer-display{font-family:‘Cormorant Garamond’,serif;font-size:3.2rem;font-weight:300;color:var(–rose-deep);letter-spacing:0.04em;line-height:1;margin:6px 0}
+.timer-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.14em;color:var(–rose);font-weight:500}
+.timer-controls{display:flex;gap:10px;margin-top:14px;justify-content:center}
+.btn-timer{padding:10px 22px;border-radius:20px;border:none;font-family:‘DM Sans’,sans-serif;font-size:0.8rem;font-weight:500;cursor:pointer;transition:all 0.2s;letter-spacing:0.04em}
+.btn-start{background:var(–rose);color:white}
+.btn-stop{background:white;color:var(–rose);border:1.5px solid var(–rose)}
+.btn-reset{background:transparent;color:var(–muted);border:1.5px solid var(–border)}
+
+.star-group{display:flex;gap:6px}
+.star{font-size:1.5rem;cursor:pointer;transition:transform 0.15s;filter:grayscale(1) opacity(0.3)}
+.star.lit{filter:none}
+.star:active{transform:scale(1.3)}
+
+.conditional{display:none}
+.conditional.visible{display:block}
+
+/* Daily mood check-in card */
+.mood-checkin-card{background:linear-gradient(135deg,var(–teal-light),#e8f8f6);border-radius:20px;padding:22px;margin-bottom:14px;box-shadow:0 2px 14px rgba(122,184,176,0.15);border:1px solid #b0dcd8}
+.mood-checkin-title{font-family:‘Cormorant Garamond’,serif;font-size:1.1rem;font-weight:400;font-style:italic;color:#3a7870;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #b0dcd8}
+.mood-checkin-saved{font-size:0.76rem;color:#3a7870;margin-top:8px;font-style:italic;text-align:center;display:none}
+
+/* History */
+.session-card{background:var(–card);border-radius:20px;padding:18px;margin-bottom:12px;box-shadow:0 2px 12px var(–shadow);border:1px solid var(–border);cursor:pointer;transition:all 0.2s;animation:slideIn 0.3s ease}
+.mood-card{background:linear-gradient(135deg,var(–teal-light),#f0faf8);border-radius:16px;padding:14px 18px;margin-bottom:10px;border:1px solid #b0dcd8;animation:slideIn 0.3s ease}
+.mood-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.mood-card-date{font-size:0.78rem;color:#3a7870;font-weight:500}
+.mood-card-type{font-size:0.66rem;text-transform:uppercase;letter-spacing:0.1em;color:var(–muted)}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.session-card:active{transform:scale(0.99)}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.card-date{font-family:‘Cormorant Garamond’,serif;font-size:1rem;font-weight:400}
+.card-meta{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(–muted);margin-top:3px}
+.card-badge{font-size:0.73rem;color:var(–rose);font-weight:500;background:var(–blush);padding:3px 9px;border-radius:10px;white-space:nowrap;text-align:right}
+.phase-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.card-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.chip{font-size:0.68rem;padding:3px 8px;border-radius:8px;background:var(–cream);color:var(–text-light);border:1px solid var(–border)}
+.chip.hl{background:var(–blush);border-color:var(–blush-dark);color:var(–rose-deep)}
+.card-note{font-size:0.78rem;color:var(–text-light);line-height:1.5;font-style:italic;border-top:1px solid var(–border);padding-top:8px;margin-top:8px}
+.empty-state{text-align:center;padding:56px 24px;color:var(–muted)}
+.empty-state .icon{font-size:2.5rem;margin-bottom:14px;opacity:0.5}
+.empty-state p{font-family:‘Cormorant Garamond’,serif;font-size:1.1rem;font-style:italic;font-weight:300}
+
+/* Summary view */
+.summary-section{background:var(–card);border-radius:20px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px var(–shadow);border:1px solid var(–border)}
+.summary-title{font-family:‘Cormorant Garamond’,serif;font-size:1.1rem;font-weight:400;font-style:italic;color:var(–rose);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(–border)}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.summary-stat{background:var(–cream);border-radius:14px;padding:14px;border:1px solid var(–border);text-align:center}
+.summary-stat-val{font-family:‘Cormorant Garamond’,serif;font-size:1.7rem;font-weight:300;color:var(–teal);line-height:1}
+.summary-stat-label{font-size:0.64rem;text-transform:uppercase;letter-spacing:0.1em;color:var(–muted);margin-top:4px;font-weight:500}
+.day-bar-wrap{margin-top:14px}
+.day-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.day-bar-label{font-size:0.7rem;color:var(–muted);width:28px;flex-shrink:0;text-align:right}
+.day-bar-track{flex:1;height:10px;background:var(–border);border-radius:5px;overflow:hidden}
+.day-bar-fill{height:100%;background:linear-gradient(90deg,var(–teal),#5a9890);border-radius:5px;transition:width 0.5s ease}
+.day-bar-num{font-size:0.68rem;color:var(–teal);width:36px;flex-shrink:0}
+
+/* Trends */
+.trend-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.trend-card{background:var(–card);border-radius:18px;padding:14px 16px;box-shadow:0 2px 10px var(–shadow);border:1px solid var(–border)}
+.trend-title{font-size:0.64rem;text-transform:uppercase;letter-spacing:0.12em;color:var(–muted);margin-bottom:5px;font-weight:500}
+.trend-value{font-family:‘Cormorant Garamond’,serif;font-size:1.8rem;font-weight:300;color:var(–rose);line-height:1}
+.trend-card-full{background:var(–card);border-radius:18px;padding:16px 18px;box-shadow:0 2px 10px var(–shadow);border:1px solid var(–border);margin-bottom:12px}
+.bar-chart{margin-top:8px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.bar-label{font-size:0.68rem;color:var(–muted);width:110px;flex-shrink:0}
+.bar-track{flex:1;height:7px;background:var(–border);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(–blush-dark),var(–rose));border-radius:4px;transition:width 0.6s ease}
+.bar-num{font-size:0.68rem;color:var(–rose);width:24px;text-align:right;flex-shrink:0}
+.chart-wrap{background:var(–card);border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 2px 10px var(–shadow);border:1px solid var(–border);overflow:hidden}
+.chart-wrap h3{font-family:‘Cormorant Garamond’,serif;font-size:1rem;font-weight:400;font-style:italic;color:var(–rose);margin-bottom:12px}
+.chart-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.chart-tab{padding:5px 10px;border-radius:12px;border:1.5px solid var(–border);background:transparent;font-family:‘DM Sans’,sans-serif;font-size:0.65rem;color:var(–muted);cursor:pointer;transition:all 0.18s}
+.chart-tab.active{background:var(–blush);border-color:var(–rose);color:var(–rose-deep);font-weight:500}
+svg.linechart{width:100%;overflow:visible}
+.chart-legend{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:0.65rem;color:var(–muted)}
+.legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* Settings */
+.settings-info{font-size:0.8rem;color:var(–text-light);line-height:1.6;margin-bottom:14px}
+.saved-badge{display:inline-block;padding:4px 12px;border-radius:10px;background:#d4e8d0;color:#3a6e38;font-size:0.73rem;font-weight:500;margin-top:8px}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(61,44,40,0.5);z-index:100;align-items:flex-end;backdrop-filter:blur(3px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(–card);border-radius:28px 28px 0 0;padding:28px 24px 48px;width:100%;max-height:88vh;overflow-y:auto;animation:slideUp 0.3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:4px;background:var(–border);border-radius:2px;margin:0 auto 20px}
+.modal h2{font-family:‘Cormorant Garamond’,serif;font-size:1.3rem;font-weight:300;margin-bottom:5px}
+.modal-subtitle{font-size:0.7rem;color:var(–muted);margin-bottom:18px;letter-spacing:0.06em}
+.modal-section{font-family:‘Cormorant Garamond’,serif;font-size:0.9rem;font-style:italic;color:var(–rose);margin:14px 0 6px;padding-top:10px;border-top:1px solid var(–border)}
+.modal-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(–border);gap:12px;align-items:flex-start}
+.modal-row:last-of-type{border-bottom:none}
+.mkey{font-size:0.66rem;text-transform:uppercase;letter-spacing:0.1em;color:var(–muted);font-weight:500;flex-shrink:0;padding-top:1px}
+.mval{font-size:0.82rem;color:var(–text);text-align:right}
+.btn-delete{width:100%;padding:13px;border-radius:14px;border:1.5px solid #e0a0a0;background:transparent;color:#c07070;font-family:‘DM Sans’,sans-serif;font-size:0.8rem;font-weight:500;cursor:pointer;margin-top:18px;letter-spacing:0.04em;transition:all 0.2s}
+.btn-delete:active{background:#fdf0f0}
+
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(–text);color:white;padding:11px 22px;border-radius:20px;font-size:0.8rem;opacity:0;transition:all 0.3s;z-index:200;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Activity accordion ── */
+.activity-item { margin-bottom: 8px; }
+.activity-pill { transition: all 0.18s; display:flex; flex-direction:column; align-items:flex-start; padding:8px 14px; height:auto; text-align:left; border-radius:16px; }
+.act-pill-top { display:flex; align-items:center; gap:7px; font-size:0.78rem; font-weight:400; color:var(–text-light); }
+.act-icon { font-size:1.1rem; line-height:1; flex-shrink:0; }
+.act-teaser { font-size:0.65rem; color:var(–muted); font-style:italic; margin-top:3px; line-height:1.3; font-weight:300; }
+.activity-pill.active .act-teaser { color:rgba(255,255,255,0.75); }
+.activity-pill.active .act-pill-top { color:white; font-weight:500; }
+/* Media upload section */
+.media-section { background: var(–card); border-radius: 20px; padding: 22px; margin-bottom: 16px; box-shadow: 0 2px 16px var(–shadow); border: 1px solid var(–border); }
+.media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.media-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; border: 1px solid var(–border); }
+.media-thumb-wrap { position: relative; }
+.media-del { position: absolute; top: 4px; right: 4px; background: rgba(61,44,40,0.7); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.upload-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border-radius: 14px; border: 2px dashed var(–border); background: var(–warm-white); color: var(–muted); font-family: ‘DM Sans’, sans-serif; font-size: 0.84rem; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
+.upload-btn:hover { border-color: var(–rose); color: var(–rose); }
+.capture-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.capture-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 14px 8px; border-radius: 16px; border: 1.5px solid var(–border); background: var(–warm-white); color: var(–text-light); font-family: ‘DM Sans’, sans-serif; font-size: 0.72rem; cursor: pointer; transition: all 0.2s; }
+.capture-btn:active { transform: scale(0.96); }
+.capture-btn .cap-icon { font-size: 1.5rem; line-height: 1; }
+.capture-btn.recording { border-color: #c07070; background: #fff0f0; color: #c07070; animation: pulse-rec 1s ease-in-out infinite; }
+@keyframes pulse-rec { 0%,100%{box-shadow:0 0 0 0 rgba(192,112,112,0.3)} 50%{box-shadow:0 0 0 6px rgba(192,112,112,0)} }
+.rec-timer { font-family: ‘Cormorant Garamond’, serif; font-size: 0.9rem; font-weight: 300; }
+/* Media upload section */
+.media-section { background: var(–card); border-radius: 20px; padding: 22px; margin-bottom: 16px; box-shadow: 0 2px 16px var(–shadow); border: 1px solid var(–border); }
+.media-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.media-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; border: 1px solid var(–border); }
+.media-thumb-wrap { position: relative; }
+.media-del { position: absolute; top: 4px; right: 4px; background: rgba(61,44,40,0.7); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 0.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.upload-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; border-radius: 14px; border: 2px dashed var(–border); background: var(–warm-white); color: var(–muted); font-family: ‘DM Sans’, sans-serif; font-size: 0.84rem; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
+.upload-btn:hover { border-color: var(–rose); color: var(–rose); }
+.capture-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.capture-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 14px 8px; border-radius: 16px; border: 1.5px solid var(–border); background: var(–warm-white); color: var(–text-light); font-family: ‘DM Sans’, sans-serif; font-size: 0.72rem; cursor: pointer; transition: all 0.2s; }
+.capture-btn:active { transform: scale(0.96); }
+.capture-btn .cap-icon { font-size: 1.5rem; line-height: 1; }
+.capture-btn.recording { border-color: #c07070; background: #fff0f0; color: #c07070; animation: pulse-rec 1s ease-in-out infinite; }
+@keyframes pulse-rec { 0%,100%{box-shadow:0 0 0 0 rgba(192,112,112,0.3)} 50%{box-shadow:0 0 0 6px rgba(192,112,112,0)} }
+.rec-timer { font-family: ‘Cormorant Garamond’, serif; font-size: 0.9rem; font-weight: 300; }
+/* Gallery */
+.gallery-tabs { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+.gallery-tab { padding:6px 14px; border-radius:14px; border:1.5px solid var(–border); background:transparent; font-family:‘DM Sans’,sans-serif; font-size:0.72rem; color:var(–muted); cursor:pointer; transition:all 0.18s; }
+.gallery-tab.active { background:var(–blush); border-color:var(–rose); color:var(–rose-deep); font-weight:500; }
+.gallery-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+.gallery-item { position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden; background:#1a1a1a; cursor:pointer; }
+.gallery-item img,.gallery-item video { width:100%; height:100%; object-fit:cover; display:block; }
+.gallery-item .g-type { position:absolute; top:5px; left:5px; background:rgba(0,0,0,0.55); color:white; font-size:0.6rem; padding:2px 6px; border-radius:6px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; }
+.gallery-item .g-del { position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.55); color:white; border:none; border-radius:50%; width:22px; height:22px; font-size:0.7rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.gallery-item .g-name { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.7)); color:white; font-size:0.6rem; padding:8px 5px 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.audio-thumb { display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(–blush),#f0d5c8); height:100%; font-size:2rem; }
+/* His mood card *//* His mood card *//* Gallery */
+.gallery-tabs { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+.gallery-tab { padding:6px 14px; border-radius:14px; border:1.5px solid var(–border); background:transparent; font-family:‘DM Sans’,sans-serif; font-size:0.72rem; color:var(–muted); cursor:pointer; transition:all 0.18s; }
+.gallery-tab.active { background:var(–blush); border-color:var(–rose); color:var(–rose-deep); font-weight:500; }
+.gallery-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+.gallery-item { position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden; background:#1a1a1a; cursor:pointer; }
+.gallery-item img,.gallery-item video { width:100%; height:100%; object-fit:cover; display:block; }
+.gallery-item .g-type { position:absolute; top:5px; left:5px; background:rgba(0,0,0,0.55); color:white; font-size:0.6rem; padding:2px 6px; border-radius:6px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; }
+.gallery-item .g-del { position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.55); color:white; border:none; border-radius:50%; width:22px; height:22px; font-size:0.7rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.gallery-item .g-name { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,0.7)); color:white; font-size:0.6rem; padding:8px 5px 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.audio-thumb { display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,var(–blush),#f0d5c8); height:100%; font-size:2rem; }
+/* Lightbox */
+/* His mood card *//* His mood card */
+.his-checkin-card { background:linear-gradient(135deg,#e8eaf6,#dde0f5); border-radius:20px; padding:22px; margin-bottom:14px; box-shadow:0 2px 14px rgba(100,120,180,0.12); border:1px solid #b0b8e0; }
+.his-checkin-title { font-family:‘Cormorant Garamond’,serif; font-size:1.1rem; font-weight:400; font-style:italic; color:#3a3870; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid #b0b8e0; }
+.activity-pill.active { background: var(–rose); border-color: var(–rose-deep); color: white !important; font-weight: 500; }
+.activity-detail {
+margin-top: 10px;
+padding: 14px;
+background: var(–warm-white);
+border-radius: 14px;
+border: 1.5px solid var(–blush);
+animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+.act-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(–muted); margin-bottom: 6px; font-weight: 500; display: block; margin-top: 10px; }
+.act-label:first-child { margin-top: 0; }
+.act-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.act-pill { padding: 5px 12px; border-radius: 16px; border: 1.5px solid var(–border); background: transparent; font-family: ‘DM Sans’, sans-serif; font-size: 0.74rem; color: var(–text-light); cursor: pointer; transition: all 0.15s; }
+.act-pill.selected { background: var(–blush); border-color: var(–rose); color: var(–rose-deep); font-weight: 500; }
+.act-slider-row { display: flex; align-items: center; gap: 8px; margin: 4px 0 8px; }
+.act-slider-row input[type=range] { flex: 1; -webkit-appearance: none; height: 4px; background: var(–border); border-radius: 2px; outline: none; }
+.act-slider-row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(–rose); cursor: pointer; }
+.act-val { font-family: ‘Cormorant Garamond’, serif; font-size: 1.1rem; color: var(–rose); min-width: 18px; text-align: right; }
+.act-end { font-size: 0.68rem; color: var(–muted); white-space: nowrap; }
+
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Sessions</h1>
+    <p>Private Journal</p>
+  </div>
+  <div class="nav">
+    <button onclick="switchView('log',this)">Pumping</button>
+    <button class="active" onclick="switchView('mood',this)">Mood</button>
+    <button onclick="switchView('summary',this)">Summary</button>
+    <button onclick="switchView('history',this)">History</button>
+    <button onclick="switchView('trends',this)">Trends</button>
+    <button onclick="switchView('intimacy',this)">Intimacy</button>
+    <button onclick="switchView('settings',this)">Settings</button>
+  </div>
+
+  <!-- ══ LOG VIEW ══════════════════════════════════════════════════ -->
+
+  <div class="view" id="view-log">
+
+```
+<!-- Pump Time Banner -->
+<div class="pump-banner">
+  <div style="font-size:0.66rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;font-weight:500">Pump Time</div>
+  <div class="pump-banner-grid">
+    <div class="pump-stat">
+      <div class="pump-stat-val" id="pump-today">0:00</div>
+      <div class="pump-stat-label">Today</div>
+    </div>
+    <div class="pump-stat">
+      <div class="pump-stat-val" id="pump-week">0:00</div>
+      <div class="pump-stat-label">This Week</div>
+    </div>
+  </div>
+</div>
+
+<!-- Cycle Banner -->
+<div id="cycle-banner" class="cycle-banner unset">
+  <div class="banner-row">
+    <div>
+      <div class="banner-phase" id="banner-phase">Cycle tracking not set up</div>
+      <div class="banner-day" id="banner-day">Go to Settings to enter pack start date</div>
+    </div>
+    <div class="banner-dot" id="banner-dot" style="background:var(--border)"></div>
+  </div>
+  <div class="cycle-wheel-wrap" id="wheel-wrap" style="display:none">
+    <div class="cycle-wheel-track" id="wheel-track"></div>
+    <div class="cycle-wheel-marker" id="wheel-marker"></div>
+  </div>
+  <div class="banner-note" id="banner-note"></div>
+</div>
+
+<!-- Timer -->
+<div class="timer-card">
+  <div class="timer-label">Session Timer</div>
+  <div class="timer-display" id="timer-display">00:00</div>
+  <div class="timer-controls">
+    <button class="btn-timer btn-start" id="btn-start" onclick="startTimer()">Start</button>
+    <button class="btn-timer btn-stop" id="btn-stop" onclick="stopTimer()" style="display:none">Pause</button>
+    <button class="btn-timer btn-reset" onclick="resetTimer()">Reset</button>
+  </div>
+</div>
+
+<!-- Cycle & Context -->
+<div class="form-section">
+  <div class="section-title">Cycle & Context</div>
+  <div class="field">
+    <label>Cycle Phase <span style="color:var(--muted);font-size:0.62rem;text-transform:none;letter-spacing:0">(auto-estimated — override if needed)</span></label>
+    <div class="pill-group" id="pg-phase">
+      <button class="pill" onclick="togglePill(this,true)">Menstrual</button>
+      <button class="pill" onclick="togglePill(this,true)">Follicular</button>
+      <button class="pill" onclick="togglePill(this,true)">Ovulatory</button>
+      <button class="pill" onclick="togglePill(this,true)">Luteal</button>
+      <button class="pill" onclick="togglePill(this,true)">Placebo week</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>Cycle Day <span style="color:var(--muted);font-size:0.62rem;text-transform:none;letter-spacing:0">(auto-filled — override if needed)</span></label>
+    <div class="inline-row">
+      <input type="number" class="num-input" id="cycle-day" min="1" max="35" placeholder="—">
+      <span>of 28</span>
+    </div>
+  </div>
+  <div class="field">
+    <label>Sleep Quality Last Night <span id="sl-slp" style="color:var(--rose)">3</span>/5</label>
+    <div class="slider-row">
+      <span class="slider-end">Poor</span>
+      <input type="range" min="1" max="5" value="3" id="sleep-slider" oninput="document.getElementById('sl-slp').textContent=this.value">
+      <span class="slider-end">Great</span>
+    </div>
+  </div>
+  <div class="field">
+    <label>Her Mood Before Session</label>
+    <div class="pill-group" id="pg-mood">
+      <button class="pill" onclick="togglePill(this,false)">Relaxed</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Stressed</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Anxious</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Overwhelmed</button>
+      <button class="pill" onclick="togglePill(this,false)">Aroused</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Tired</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Foggy</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Low energy</button>
+      <button class="pill" onclick="togglePill(this,false)">Playful</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Confident</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Happy</button>
+      <button class="pill mood-energy" onclick="togglePill(this,false)">Energetic</button>
+      <button class="pill mood-energy" onclick="togglePill(this,false)">Motivated</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Tender</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Emotional</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Sensitive</button>
+      <button class="pill mood-irritable" onclick="togglePill(this,false)">Irritable</button>
+      <button class="pill mood-irritable" onclick="togglePill(this,false)">Frustrated</button>
+      <button class="pill" onclick="togglePill(this,false)">Curious</button>
+    </div>
+  </div>
+</div>
+
+<!-- Device Settings -->
+<div class="form-section">
+  <div class="section-title">Device Settings</div>
+  <div class="field">
+    <label>Primary Mode</label>
+    <div class="pill-group" id="pg-mode">
+      <button class="pill" onclick="togglePill(this,true)">Suction only</button>
+      <button class="pill" onclick="togglePill(this,true)">Massage only</button>
+      <button class="pill" onclick="togglePill(this,true)">Combined</button>
+      <button class="pill" onclick="togglePill(this,true)">App-controlled</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>Mode Pattern</label>
+    <div class="pill-group" id="pg-pattern">
+      <button class="pill" onclick="togglePill(this,true)">Constant</button>
+      <button class="pill" onclick="togglePill(this,true)">Pulse</button>
+      <button class="pill" onclick="togglePill(this,true)">Wave</button>
+      <button class="pill" onclick="togglePill(this,true)">Interval</button>
+      <button class="pill" onclick="togglePill(this,true)">Escalating</button>
+      <button class="pill" onclick="togglePill(this,true)">Mixed</button>
+      <button class="pill" onclick="togglePill(this,true)">Expression</button>
+      <button class="pill" onclick="togglePill(this,true)">Let-down</button>
+      <button class="pill" onclick="togglePill(this,true)">Comfort</button>
+      <button class="pill" onclick="togglePill(this,true)">Custom</button>
+    </div>
+  </div>
+  <div class="dual-slider">
+    <div class="field">
+      <label>Suction <span id="sl-s" style="color:var(--rose)">5</span>/10</label>
+      <input type="range" min="0" max="10" value="5" id="suction-slider" oninput="document.getElementById('sl-s').textContent=this.value">
+    </div>
+    <div class="field">
+      <label>Massage <span id="sl-m" style="color:var(--rose)">5</span>/10</label>
+      <input type="range" min="0" max="10" value="5" id="massage-slider" oninput="document.getElementById('sl-m').textContent=this.value">
+    </div>
+  </div>
+  <div class="field">
+    <label>Flange Size</label>
+    <select id="flange-size">
+      <option value="">— select —</option>
+      <option>XS (17mm)</option><option>S (19mm)</option><option>M (21mm)</option>
+      <option>L (24mm)</option><option>XL (27mm)</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Placement</label>
+    <div class="pill-group" id="pg-placement">
+      <button class="pill" onclick="togglePill(this,true)">Left</button>
+      <button class="pill" onclick="togglePill(this,true)">Right</button>
+      <button class="pill" onclick="togglePill(this,true)">Both</button>
+      <button class="pill" onclick="togglePill(this,true)">Alternating</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>Duration (minutes)</label>
+    <div class="inline-row">
+      <input type="number" class="num-input" id="duration" min="1" max="120" placeholder="—">
+      <span>min</span>
+    </div>
+  </div>
+</div>
+
+<!-- Nipple Changes -->
+<div class="form-section">
+  <div class="section-title">Nipple Changes</div>
+  <div class="field"><label>Colour Change <span id="sl-nc" style="color:var(--rose)">0</span>/5</label>
+    <div class="slider-row"><span class="slider-end">None</span><input type="range" min="0" max="5" value="0" id="nipple-color" oninput="document.getElementById('sl-nc').textContent=this.value"><span class="slider-end">Deep</span></div></div>
+  <div class="field"><label>Engorgement <span id="sl-ne" style="color:var(--rose)">0</span>/5</label>
+    <div class="slider-row"><span class="slider-end">None</span><input type="range" min="0" max="5" value="0" id="nipple-engorgement" oninput="document.getElementById('sl-ne').textContent=this.value"><span class="slider-end">Significant</span></div></div>
+  <div class="field"><label>Texture <span id="sl-nt" style="color:var(--rose)">0</span>/5</label>
+    <div class="slider-row"><span class="slider-end">None</span><input type="range" min="0" max="5" value="0" id="nipple-texture" oninput="document.getElementById('sl-nt').textContent=this.value"><span class="slider-end">Significant</span></div></div>
+  <div class="field"><label>Sensitivity <span id="sl-ns" style="color:var(--rose)">0</span>/5</label>
+    <div class="slider-row"><span class="slider-end">None</span><input type="range" min="0" max="5" value="0" id="nipple-sensitivity" oninput="document.getElementById('sl-ns').textContent=this.value"><span class="slider-end">Intense</span></div></div>
+  <div class="field"><label>Notes</label><textarea id="nipple-notes" rows="2" placeholder="Describe any specific changes…"></textarea></div>
+</div>
+
+<!-- Breast Tissue -->
+<div class="form-section">
+  <div class="section-title">Breast Tissue Changes</div>
+  <div class="field"><label>Fullness <span id="sl-bf" style="color:var(--rose)">0</span>/5</label>
+    <div class="slider-row"><span class="slider-end">None</span><input type="range" min="0" max="5" value="0" id="breast-fullness" oninput="document.getElementById('sl-bf').textContent=this.value"><span class="slider-end">Notable</span></div></div>
+  <div class="field"><label>Firmness <span id="sl-bfm" style="color:var(--rose)">0</span>/5</label>
+    <div class="slider-row"><span class="slider-end">None</span><input type="range" min="0" max="5" value="0" id="breast-firmness" oninput="document.getElementById('sl-bfm').textContent=this.value"><span class="slider-end">Notable</span></div></div>
+  <div class="field"><label>Heaviness <span id="sl-bw" style="color:var(--rose)">0</span>/5</label>
+    <div class="slider-row"><span class="slider-end">None</span><input type="range" min="0" max="5" value="0" id="breast-weight" oninput="document.getElementById('sl-bw').textContent=this.value"><span class="slider-end">Notable</span></div></div>
+  <div class="field"><label>Notes</label><textarea id="breast-notes" rows="2" placeholder="Sensations, tenderness…"></textarea></div>
+</div>
+
+<!-- Skin Changes -->
+<div class="form-section">
+  <div class="section-title">Skin Changes</div>
+  <div class="field"><label>Flushing <span id="sl-sk" style="color:var(--rose)">0</span>/5</label>
+    <div class="slider-row"><span class="slider-end">None</span><input type="range" min="0" max="5" value="0" id="skin-flush" oninput="document.getElementById('sl-sk').textContent=this.value"><span class="slider-end">Deep</span></div></div>
+  <div class="field"><label>Warmth <span id="sl-sw" style="color:var(--rose)">0</span>/5</label>
+    <div class="slider-row"><span class="slider-end">None</span><input type="range" min="0" max="5" value="0" id="skin-warmth" oninput="document.getElementById('sl-sw').textContent=this.value"><span class="slider-end">Hot</span></div></div>
+  <div class="field"><label>Texture / Goosebumps <span id="sl-st" style="color:var(--rose)">0</span>/5</label>
+    <div class="slider-row"><span class="slider-end">None</span><input type="range" min="0" max="5" value="0" id="skin-texture" oninput="document.getElementById('sl-st').textContent=this.value"><span class="slider-end">Strong</span></div></div>
+</div>
+
+<!-- Fluid -->
+<div class="form-section">
+  <div class="section-title">Fluid Presence</div>
+  <div class="field"><label>Observed?</label>
+    <div class="pill-group">
+      <button class="pill yes-pill" onclick="toggleYesNo(this,'fluid')">Yes</button>
+      <button class="pill no-pill" onclick="toggleYesNo(this,'fluid')">No</button>
+    </div>
+  </div>
+  <div class="conditional" id="fluid-yes-fields">
+    <div class="field" style="margin-top:12px"><label>Volume</label>
+      <div class="pill-group" id="pg-fluid-vol">
+        <button class="pill" onclick="togglePill(this,true)">Trace</button>
+        <button class="pill" onclick="togglePill(this,true)">Drops</button>
+        <button class="pill" onclick="togglePill(this,true)">Small amount</button>
+        <button class="pill" onclick="togglePill(this,true)">Moderate</button>
+      </div></div>
+    <div class="field"><label>Appearance</label>
+      <div class="pill-group" id="pg-fluid-app">
+        <button class="pill" onclick="togglePill(this,true)">Clear</button>
+        <button class="pill" onclick="togglePill(this,true)">Slightly cloudy</button>
+        <button class="pill" onclick="togglePill(this,true)">White</button>
+        <button class="pill" onclick="togglePill(this,true)">Thin</button>
+        <button class="pill" onclick="togglePill(this,true)">Thick</button>
+      </div></div>
+    <div class="field"><label>Side</label>
+      <div class="pill-group" id="pg-fluid-side">
+        <button class="pill" onclick="togglePill(this,true)">Left</button>
+        <button class="pill" onclick="togglePill(this,true)">Right</button>
+        <button class="pill" onclick="togglePill(this,true)">Both</button>
+      </div></div>
+    <div class="field"><label>Notes</label><textarea id="fluid-notes" rows="2" placeholder="Any additional detail…"></textarea></div>
+  </div>
+</div>
+
+<!-- Sexual Response -->
+<div class="form-section">
+  <div class="section-title">Sexual Response</div>
+  <div class="field"><label>Her Arousal <span id="sl-ar" style="color:var(--rose)">3</span>/5</label>
+    <div class="slider-row"><span class="slider-end">Low</span><input type="range" min="1" max="5" value="3" id="arousal-slider" oninput="document.getElementById('sl-ar').textContent=this.value"><span class="slider-end">High</span></div></div>
+  <div class="field"><label>Session Type</label>
+    <div class="pill-group" id="pg-type">
+      <button class="pill" onclick="togglePill(this,true)">Solo daytime</button>
+      <button class="pill" onclick="togglePill(this,true)">Partner present</button>
+      <button class="pill" onclick="togglePill(this,true)">During intimacy</button>
+      <button class="pill" onclick="togglePill(this,true)">Relaxation only</button>
+    </div></div>
+  <div class="field"><label>Initiated By</label>
+    <div class="pill-group" id="pg-initiation">
+      <button class="pill" onclick="togglePill(this,true)">Her</button>
+      <button class="pill" onclick="togglePill(this,true)">Partner</button>
+      <button class="pill" onclick="togglePill(this,true)">Mutual</button>
+    </div></div>
+  <div class="field"><label>Partner Nursing?</label>
+    <div class="pill-group">
+      <button class="pill yes-pill" onclick="toggleYesNo(this,'nursing')">Yes</button>
+      <button class="pill no-pill" onclick="toggleYesNo(this,'nursing')">No</button>
+    </div></div>
+  <div class="field"><label>Incorporated Into Sex?</label>
+    <div class="pill-group">
+      <button class="pill yes-pill" onclick="toggleYesNo(this,'sex')">Yes</button>
+      <button class="pill no-pill" onclick="toggleYesNo(this,'sex')">No</button>
+    </div></div>
+  <div class="field"><label>Orgasm?</label>
+    <div class="pill-group">
+      <button class="pill yes-pill" onclick="toggleYesNo(this,'orgasm')">Yes</button>
+      <button class="pill no-pill" onclick="toggleYesNo(this,'orgasm')">No</button>
+    </div></div>
+  <div class="conditional" id="orgasm-yes-fields">
+    <div class="field" style="margin-top:12px"><label>Orgasm Intensity <span id="sl-oi" style="color:var(--rose)">3</span>/5</label>
+      <div class="slider-row"><span class="slider-end">Mild</span><input type="range" min="1" max="5" value="3" id="orgasm-intensity" oninput="document.getElementById('sl-oi').textContent=this.value"><span class="slider-end">Intense</span></div></div>
+  </div>
+</div>
+
+<!-- Sensation -->
+<div class="form-section">
+  <div class="section-title">Sensation & Comfort</div>
+  <div class="field"><label>Comfort <span id="sl-c" style="color:var(--rose)">3</span>/5</label>
+    <div class="slider-row"><span class="slider-end">Low</span><input type="range" min="1" max="5" value="3" id="comfort-slider" oninput="document.getElementById('sl-c').textContent=this.value"><span class="slider-end">High</span></div></div>
+  <div class="field"><label>Pleasure <span id="sl-pl" style="color:var(--rose)">3</span>/5</label>
+    <div class="slider-row"><span class="slider-end">Low</span><input type="range" min="1" max="5" value="3" id="pleasure-slider" oninput="document.getElementById('sl-pl').textContent=this.value"><span class="slider-end">High</span></div></div>
+  <div class="field"><label>Visible Responses</label>
+    <div class="pill-group" id="pg-response">
+      <button class="pill" onclick="togglePill(this,false)">Breathing change</button>
+      <button class="pill" onclick="togglePill(this,false)">Vocalisation</button>
+      <button class="pill" onclick="togglePill(this,false)">Body tension</button>
+      <button class="pill" onclick="togglePill(this,false)">Full body flush</button>
+      <button class="pill" onclick="togglePill(this,false)">Goosebumps</button>
+      <button class="pill" onclick="togglePill(this,false)">Shivering</button>
+      <button class="pill" onclick="togglePill(this,false)">Relaxation</button>
+      <button class="pill" onclick="togglePill(this,false)">Discomfort</button>
+    </div></div>
+  <div class="field"><label>Overall Rating</label>
+    <div class="star-group" id="star-group">
+      <span class="star" onclick="setStars(1)">♥</span><span class="star" onclick="setStars(2)">♥</span>
+      <span class="star" onclick="setStars(3)">♥</span><span class="star" onclick="setStars(4)">♥</span>
+      <span class="star" onclick="setStars(5)">♥</span>
+    </div></div>
+</div>
+
+<!-- Notes -->
+<div class="form-section">
+  <div class="section-title">Notes</div>
+  <div class="field"><label>Observations</label><textarea id="observations" rows="3" placeholder="What stood out this session…"></textarea></div>
+  <div class="field"><label>Her Feedback</label><textarea id="her-feedback" rows="3" placeholder="Her words or reactions…"></textarea></div>
+  <div class="field"><label>Adjustments to Try Next</label><textarea id="next-adjustments" rows="2" placeholder="Settings, timing, approach…"></textarea></div>
+</div>
+
+<button class="btn-primary" onclick="saveSession()">Save Session</button>
+<div style="height:16px"></div>
+```
+
+  </div>
+
+  <!-- ══ MOOD CHECK-IN VIEW ════════════════════════════════════════ -->
+
+  <div class="view active" id="view-mood">
+
+```
+<!-- Today at a glance — rendered by JS -->
+<div id="mood-today-summary"></div>
+
+<div class="mood-checkin-card">
+  <div class="mood-checkin-title">Daily Mood Check-in</div>
+
+  <div class="field">
+    <label style="color:#3a7870">Overall Mood Today</label>
+    <div class="pill-group" id="pg-daily-mood">
+      <button class="pill" onclick="togglePill(this,false)">Relaxed</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Stressed</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Anxious</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Overwhelmed</button>
+      <button class="pill" onclick="togglePill(this,false)">Aroused</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Tired</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Foggy</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Low energy</button>
+      <button class="pill" onclick="togglePill(this,false)">Playful</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Confident</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Happy</button>
+      <button class="pill mood-energy" onclick="togglePill(this,false)">Energetic</button>
+      <button class="pill mood-energy" onclick="togglePill(this,false)">Motivated</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Tender</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Emotional</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Sensitive</button>
+      <button class="pill mood-irritable" onclick="togglePill(this,false)">Irritable</button>
+      <button class="pill mood-irritable" onclick="togglePill(this,false)">Frustrated</button>
+      <button class="pill" onclick="togglePill(this,false)">Curious</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Vulnerable</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Craving connection</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Grateful</button>
+      <button class="pill mood-energy" onclick="togglePill(this,false)">Restless</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Numb</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Irritable</button>
+      <button class="pill" onclick="togglePill(this,false)">Sensual</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Peaceful</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Sad</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Dissociated</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label style="color:#3a7870">Physical Symptoms Today</label>
+    <div class="pill-group" id="pg-daily-physical">
+      <button class="pill" onclick="togglePill(this,false)">None notable</button>
+      <button class="pill" onclick="togglePill(this,false)">Breast tenderness</button>
+      <button class="pill" onclick="togglePill(this,false)">Bloating</button>
+      <button class="pill" onclick="togglePill(this,false)">Cramping</button>
+      <button class="pill" onclick="togglePill(this,false)">Headache</button>
+      <button class="pill" onclick="togglePill(this,false)">Backache</button>
+      <button class="pill" onclick="togglePill(this,false)">Spotting</button>
+      <button class="pill" onclick="togglePill(this,false)">Menstrual flow</button>
+      <button class="pill" onclick="togglePill(this,false)">Nausea</button>
+      <button class="pill" onclick="togglePill(this,false)">Fatigue</button>
+      <button class="pill" onclick="togglePill(this,false)">Hot flashes</button>
+      <button class="pill" onclick="togglePill(this,false)">Increased discharge</button>
+      <button class="pill" onclick="togglePill(this,false)">Skin sensitivity</button>
+      <button class="pill" onclick="togglePill(this,false)">Heightened senses</button>
+      <button class="pill" onclick="togglePill(this,false)">Joint / body aches</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label style="color:#3a7870">Sexual Desire Today</label>
+    <div class="pill-group" id="pg-daily-desire">
+      <button class="pill" onclick="togglePill(this,true)">None</button>
+      <button class="pill" onclick="togglePill(this,true)">Low</button>
+      <button class="pill" onclick="togglePill(this,true)">Moderate</button>
+      <button class="pill" onclick="togglePill(this,true)">High</button>
+      <button class="pill" onclick="togglePill(this,true)">Very high</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label style="color:#3a7870">Overall Wellbeing <span id="sl-wb" style="color:var(--teal)">3</span>/5</label>
+    <div class="slider-row">
+      <span class="slider-end">Low</span>
+      <input type="range" min="1" max="5" value="3" id="wellbeing-slider" oninput="document.getElementById('sl-wb').textContent=this.value" style="accent-color:var(--teal)">
+      <span class="slider-end">High</span>
+    </div>
+  </div>
+
+  <div class="field" id="sleep-field-wrap">
+    <label style="color:#3a7870" id="sleep-field-label">Sleep Last Night <span id="sl-dslp" style="color:var(--teal)">3</span>/5</label>
+    <div class="slider-row">
+      <span class="slider-end">Poor</span>
+      <input type="range" min="1" max="5" value="3" id="daily-sleep-slider" oninput="document.getElementById('sl-dslp').textContent=this.value" style="accent-color:var(--teal)">
+      <span class="slider-end">Great</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label style="color:#3a7870">Notes</label>
+    <textarea id="daily-mood-notes" rows="2" placeholder="Anything notable about her day, energy, or how she's feeling…"></textarea>
+  </div>
+</div>
+
+<!-- For Him -->
+<div class="his-checkin-card">
+  <div class="his-checkin-title">For Him</div>
+
+  <div class="field">
+    <label style="color:#3a3870">My Mood Today</label>
+    <div class="pill-group" id="pg-his-mood">
+      <button class="pill" onclick="togglePill(this,false)">Relaxed</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Stressed</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Anxious</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Overwhelmed</button>
+      <button class="pill" onclick="togglePill(this,false)">Aroused</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Tired</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Foggy</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Low energy</button>
+      <button class="pill" onclick="togglePill(this,false)">Playful</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Confident</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Happy</button>
+      <button class="pill mood-energy" onclick="togglePill(this,false)">Energetic</button>
+      <button class="pill mood-energy" onclick="togglePill(this,false)">Motivated</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Tender</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Emotional</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Protective</button>
+      <button class="pill mood-irritable" onclick="togglePill(this,false)">Irritable</button>
+      <button class="pill mood-irritable" onclick="togglePill(this,false)">Frustrated</button>
+      <button class="pill" onclick="togglePill(this,false)">Curious</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Vulnerable</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Craving connection</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Grateful</button>
+      <button class="pill mood-energy" onclick="togglePill(this,false)">Restless</button>
+      <button class="pill mood-foggy" onclick="togglePill(this,false)">Numb</button>
+      <button class="pill" onclick="togglePill(this,false)">Sensual</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Peaceful</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Sad</button>
+      <button class="pill mood-stress" onclick="togglePill(this,false)">Disconnected</button>
+      <button class="pill mood-energy" onclick="togglePill(this,false)">Focused</button>
+      <button class="pill mood-tender" onclick="togglePill(this,false)">Affectionate</button>
+      <button class="pill mood-happy" onclick="togglePill(this,false)">Proud</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label style="color:#3a3870">Physical Today</label>
+    <div class="pill-group" id="pg-his-physical">
+      <button class="pill" onclick="togglePill(this,false)">None notable</button>
+      <button class="pill" onclick="togglePill(this,false)">Headache</button>
+      <button class="pill" onclick="togglePill(this,false)">Backache</button>
+      <button class="pill" onclick="togglePill(this,false)">Low energy</button>
+      <button class="pill" onclick="togglePill(this,false)">Fatigue</button>
+      <button class="pill" onclick="togglePill(this,false)">Nausea</button>
+      <button class="pill" onclick="togglePill(this,false)">Joint / body aches</button>
+      <button class="pill" onclick="togglePill(this,false)">Skin sensitivity</button>
+      <button class="pill" onclick="togglePill(this,false)">Heightened libido</button>
+      <button class="pill" onclick="togglePill(this,false)">Low libido</button>
+      <button class="pill" onclick="togglePill(this,false)">Testicular discomfort</button>
+      <button class="pill" onclick="togglePill(this,false)">Prostate awareness</button>
+      <button class="pill" onclick="togglePill(this,false)">Morning erection present</button>
+      <button class="pill" onclick="togglePill(this,false)">Difficulty with erection</button>
+      <button class="pill" onclick="togglePill(this,false)">Hypersensitivity</button>
+      <button class="pill" onclick="togglePill(this,false)">Reduced sensitivity</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label style="color:#3a3870">My Sexual Desire Today</label>
+    <div class="pill-group" id="pg-his-desire">
+      <button class="pill" onclick="togglePill(this,true)">None</button>
+      <button class="pill" onclick="togglePill(this,true)">Low</button>
+      <button class="pill" onclick="togglePill(this,true)">Moderate</button>
+      <button class="pill" onclick="togglePill(this,true)">High</button>
+      <button class="pill" onclick="togglePill(this,true)">Very high</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label style="color:#3a3870">My Wellbeing <span id="sl-his-wb" style="color:#5560c0">3</span>/5</label>
+    <div class="slider-row">
+      <span class="slider-end">Low</span>
+      <input type="range" min="1" max="5" value="3" id="his-wellbeing-slider"
+        oninput="document.getElementById('sl-his-wb').textContent=this.value"
+        style="accent-color:#7080d0">
+      <span class="slider-end">High</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label style="color:#3a3870">My Sleep Last Night <span id="sl-his-slp" style="color:#5560c0">3</span>/5</label>
+    <div class="slider-row">
+      <span class="slider-end">Poor</span>
+      <input type="range" min="1" max="5" value="3" id="his-sleep-slider"
+        oninput="document.getElementById('sl-his-slp').textContent=this.value"
+        style="accent-color:#7080d0">
+      <span class="slider-end">Great</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label style="color:#3a3870">My Notes</label>
+    <textarea id="his-mood-notes" rows="2" placeholder="Anything on my mind, how I'm feeling today…"></textarea>
+  </div>
+</div>
+
+<button class="btn-teal" onclick="saveDailyMood()" style="margin-bottom:14px">Save Daily Check-in</button>
+<div class="mood-checkin-saved" id="mood-saved-msg" style="text-align:center;font-size:0.78rem;color:#3a7870;font-style:italic;margin-bottom:8px;display:none">✓ Check-in saved</div>
+
+<!-- Recent mood entries -->
+<div id="recent-moods"></div>
+```
+
+  </div>
+
+  <!-- ══ SUMMARY VIEW ══════════════════════════════════════════════ -->
+
+  <div class="view" id="view-summary">
+    <div id="summary-content"></div>
+  </div>
+
+  <!-- ══ HISTORY VIEW ══════════════════════════════════════════════ -->
+
+  <div class="view" id="view-history">
+    <select id="history-filter" style="display:none"><!-- filter state --></select>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- ══ TRENDS VIEW ═══════════════════════════════════════════════ -->
+
+  <div class="view" id="view-trends">
+    <div id="trends-content"></div>
+  </div>
+
+  <!-- ══ INTIMACY VIEW ══════════════════════════════════════════════ -->
+
+  <div class="view" id="view-intimacy">
+    <div id="intimacy-content"></div>
+  </div>
+
+  <!-- ══ SETTINGS VIEW ════════════════════════════════════════════ -->
+
+  <div class="view" id="view-settings">
+    <div class="form-section">
+      <div class="section-title">Pill Pack Settings</div>
+
+```
+  <!-- Saved state — shown when pack start date is already set -->
+  <div id="settings-saved-state" style="display:none;margin-bottom:16px">
+    <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px;font-weight:500">Pack Start Date</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;background:var(--cream);border-radius:12px;padding:12px 14px;border:1px solid var(--border)">
+      <div>
+        <div id="settings-date-display" style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;color:var(--text)"></div>
+        <div id="settings-packtype-display" style="font-size:0.72rem;color:var(--muted);margin-top:2px"></div>
+      </div>
+      <button onclick="showSettingsEdit()" style="padding:6px 14px;border-radius:10px;border:1.5px solid var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:0.76rem;color:var(--rose);cursor:pointer;font-weight:500">Edit</button>
+    </div>
+    <div style="font-size:0.76px;color:var(--muted);margin-top:6px;font-style:italic;font-size:0.74rem">Cycle phase and day are calculated automatically from this date.</div>
+  </div>
+
+  <!-- Edit state — shown on first setup or when Edit is tapped -->
+  <div id="settings-edit-state">
+    <p class="settings-info">Enter the date the current pill pack was started. The app estimates cycle phase and day automatically based on a 28-day pack (21 active + 7 placebo).</p>
+    <div class="field"><label>Pack Start Date (Day 1)</label><input type="date" id="pack-start-date"></div>
+    <div class="field"><label>Pack Type</label>
+      <div class="pill-group" id="pg-packtype">
+        <button class="pill selected" onclick="togglePill(this,true)">21 active + 7 placebo</button>
+        <button class="pill" onclick="togglePill(this,true)">24 active + 4 placebo</button>
+        <button class="pill" onclick="togglePill(this,true)">21-day (no placebo)</button>
+      </div></div>
+    <button class="btn-primary" onclick="saveSettings()">Save</button>
+  </div>
+
+  <div id="settings-saved-toast" style="display:none;margin-top:10px;text-align:center"><span class="saved-badge">✓ Saved</span></div>
+</div>
+<div class="form-section" id="current-cycle-card" style="display:none">
+  <div class="section-title">Current Cycle Status</div>
+  <div id="settings-cycle-detail"></div>
+</div>
+<div class="form-section">
+  <div class="section-title">Data</div>
+  <p class="settings-info">Export all sessions and mood entries as JSON for backup.</p>
+  <button class="btn-secondary" onclick="exportData()">Export Data (JSON)</button>
+  <button class="btn-delete" style="margin-top:10px" onclick="clearData()">Clear All Data</button>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- Modal -->
+
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal"><div class="modal-handle"></div><div id="modal-body"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// Global error trap
+window.addEventListener('unhandledrejection',function(e){var m=e.reason?e.reason.message||String(e.reason):'Promise error';var d=document.createElement('div');d.setAttribute('style','position:fixed;top:0;left:0;right:0;background:#a85f50;color:white;padding:10px 14px;font-family:monospace;font-size:0.75rem;z-index:9999;word-break:break-all');d.textContent='App error: '+m+' (tap to dismiss)';d.onclick=function(){d.remove();};document.body.appendChild(d);});
+// ── DB ──────────────────────────────────────────────────────────────
+let db;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open('SessionsDB_v8',3);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains('sessions'))
+        d.createObjectStore('sessions',{keyPath:'id',autoIncrement:true});
+      if(!d.objectStoreNames.contains('moods'))
+        d.createObjectStore('moods',{keyPath:'id',autoIncrement:true});
+      if(!d.objectStoreNames.contains('intimacy'))
+        d.createObjectStore('intimacy',{keyPath:'id',autoIncrement:true});
+      if(!d.objectStoreNames.contains('customOptions'))
+        d.createObjectStore('customOptions',{keyPath:'id',autoIncrement:true});
+    };
+    req.onsuccess=e=>{db=e.target.result;res(db)};
+    req.onerror=()=>rej(req.error);
+  });
+}
+const dbOp=(store,mode,fn)=>new Promise((res,rej)=>{
+  const tx=db.transaction(store,mode);
+  const req=fn(tx.objectStore(store));
+  req.onsuccess=()=>res(req.result);
+  req.onerror=()=>rej(req.error);
+});
+const getAllSessions=()=>dbOp('sessions','readonly',s=>s.getAll());
+const addSession=d=>dbOp('sessions','readwrite',s=>s.add(d));
+const deleteSession=id=>dbOp('sessions','readwrite',s=>s.delete(id));
+const getAllMoods=()=>dbOp('moods','readonly',s=>s.getAll());
+const addMood=d=>dbOp('moods','readwrite',s=>s.add(d));
+const deleteMood=id=>dbOp('moods','readwrite',s=>s.delete(id));
+const getAllIntimacy=()=>dbOp('intimacy','readonly',s=>s.getAll());
+const addIntimacy=d=>dbOp('intimacy','readwrite',s=>s.add(d));
+const deleteIntimacy=id=>dbOp('intimacy','readwrite',s=>s.delete(id));
+const getAllCustomOptions=()=>dbOp('customOptions','readonly',s=>s.getAll());
+const addCustomOption=d=>dbOp('customOptions','readwrite',s=>s.add(d));
+
+// ── SETTINGS ────────────────────────────────────────────────────────
+function getSettings(){try{return JSON.parse(localStorage.getItem('sessionSettings'))||{};}catch{return {};}}
+function saveSettings(){
+  const date=document.getElementById('pack-start-date').value;
+  const packType=getPills('pg-packtype')[0]||'21 active + 7 placebo';
+  if(!date){showToast('Please enter a pack start date');return;}
+  localStorage.setItem('sessionSettings',JSON.stringify({packStartDate:date,packType}));
+  const toast=document.getElementById('settings-saved-toast');
+  toast.style.display='block';setTimeout(()=>toast.style.display='none',2000);
+  updateCycleBanner();renderSettingsCycleDetail();
+  renderSettingsSavedState();
+  showToast('Settings saved ✓');
+}
+
+function renderSettingsSavedState(){
+  const s=getSettings();
+  const savedState=document.getElementById('settings-saved-state');
+  const editState=document.getElementById('settings-edit-state');
+  if(s.packStartDate){
+    savedState.style.display='block';
+    editState.style.display='none';
+    document.getElementById('settings-date-display').textContent=
+      new Date(s.packStartDate+'T00:00:00').toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
+    document.getElementById('settings-packtype-display').textContent=s.packType||'21 active + 7 placebo';
+  } else {
+    savedState.style.display='none';
+    editState.style.display='block';
+  }
+}
+
+function showSettingsEdit(){
+  const s=getSettings();
+  document.getElementById('settings-saved-state').style.display='none';
+  document.getElementById('settings-edit-state').style.display='block';
+  if(s.packStartDate) document.getElementById('pack-start-date').value=s.packStartDate;
+  // Re-select pack type pill
+  const packType=s.packType||'21 active + 7 placebo';
+  document.querySelectorAll('#pg-packtype .pill').forEach(p=>{
+    p.classList.toggle('selected', p.textContent.trim()===packType);
+  });
+}
+
+// ── CYCLE ENGINE ────────────────────────────────────────────────────
+const PHASE_COLORS={'Menstrual / Early Follicular':'#d4a0a0','Follicular':'#a0c4a0','Ovulatory':'#c4b870','Luteal':'#a0a8c4','Placebo Week':'#b0b0b0'};
+const PHASE_CLASSES={'Menstrual / Early Follicular':'menstrual','Follicular':'follicular','Ovulatory':'ovulatory','Luteal':'luteal','Placebo Week':'placebo'};
+const PHASE_NOTES={
+  'Menstrual / Early Follicular':'Hormones at their lowest. Withdrawal bleed likely. Sensitivity may be reduced.',
+  'Follicular':'Estrogen rising. Energy improving. Breast tissue may begin responding more readily.',
+  'Ovulatory':'Peak estrogen window. Sensitivity and arousal often highest here even on BC.',
+  'Luteal':'Progesterone dominant. Breast fullness and tenderness may increase.',
+  'Placebo Week':'No active hormones. Withdrawal bleed likely. Sensitivity variable.',
+};
+
+function getCycleStatus(forDate){
+  const s=getSettings();
+  if(!s.packStartDate)return null;
+  const start=new Date(s.packStartDate+'T00:00:00');
+  const target=forDate?new Date(forDate):new Date();
+  const diff=Math.floor((target-start)/(1000*60*60*24));
+  if(diff<0)return null;
+  const cycleDay=(diff%28)+1;
+  let phase;
+  if(cycleDay<=5)phase='Menstrual / Early Follicular';
+  else if(cycleDay<=13)phase='Follicular';
+  else if(cycleDay<=16)phase='Ovulatory';
+  else if(cycleDay<=21)phase='Luteal';
+  else phase='Placebo Week';
+  return{cycleDay,phase,color:PHASE_COLORS[phase],phaseClass:PHASE_CLASSES[phase],note:PHASE_NOTES[phase]};
+}
+
+function updateCycleBanner(){
+  const status=getCycleStatus();
+  const banner=document.getElementById('cycle-banner');
+  if(!status){
+    banner.className='cycle-banner unset';
+    document.getElementById('banner-phase').textContent='Cycle tracking not set up';
+    document.getElementById('banner-day').textContent='Go to Settings to enter pack start date';
+    document.getElementById('banner-note').textContent='';
+    document.getElementById('wheel-wrap').style.display='none';
+    return;
+  }
+  banner.className=`cycle-banner ${status.phaseClass}`;
+  document.getElementById('banner-phase').textContent=status.phase;
+  document.getElementById('banner-day').textContent=`Day ${status.cycleDay} of 28`;
+  document.getElementById('banner-dot').style.background=status.color;
+  document.getElementById('banner-note').textContent=status.note;
+  const ww=document.getElementById('wheel-wrap');
+  ww.style.display='block';
+  const pct=((status.cycleDay-1)/28*100).toFixed(1);
+  document.getElementById('wheel-track').style.width=pct+'%';
+  document.getElementById('wheel-track').style.background=status.color;
+  document.getElementById('wheel-marker').style.left=pct+'%';
+  autoFillCycleFields(status);
+}
+
+function autoFillCycleFields(status){
+  // Always update cycle day from computed status
+  const cdInput=document.getElementById('cycle-day');
+  if(cdInput) cdInput.value=status.cycleDay;
+  // Always select the matching phase pill
+  const map={'Menstrual / Early Follicular':'Menstrual','Follicular':'Follicular','Ovulatory':'Ovulatory','Luteal':'Luteal','Placebo Week':'Placebo week'};
+  const label=map[status.phase];
+  document.querySelectorAll('#pg-phase .pill').forEach(p=>{
+    p.classList.toggle('selected', p.textContent.trim()===label);
+  });
+}
+
+function renderSettingsCycleDetail(){
+  const s=getSettings();
+  const card=document.getElementById('current-cycle-card');
+  const detail=document.getElementById('settings-cycle-detail');
+  if(!s.packStartDate){card.style.display='none';return;}
+  card.style.display='block';
+  const status=getCycleStatus();
+  if(!status){detail.innerHTML='<p style="color:var(--muted);font-size:0.8rem">Pack start date is in the future.</p>';return;}
+  const phases=[{l:'Menstrual',d:'1–5',c:PHASE_COLORS['Menstrual / Early Follicular'],flex:5},{l:'Follicular',d:'6–13',c:PHASE_COLORS['Follicular'],flex:8},{l:'Ovulatory',d:'14–16',c:PHASE_COLORS['Ovulatory'],flex:3},{l:'Luteal',d:'17–21',c:PHASE_COLORS['Luteal'],flex:5},{l:'Placebo',d:'22–28',c:PHASE_COLORS['Placebo Week'],flex:7}];
+  detail.innerHTML=`
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;color:var(--rose)">${status.phase}</div>
+    <div style="font-size:0.76rem;color:var(--muted);margin-top:4px">Day ${status.cycleDay} of 28 · Pack started ${new Date(s.packStartDate+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+    <div style="font-size:0.78rem;color:var(--text-light);margin-top:8px;font-style:italic;line-height:1.5">${status.note}</div>
+    <div style="display:flex;gap:3px;margin-top:14px">
+      ${phases.map(p=>`<div style="flex:${p.flex};height:26px;background:${p.c};border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:0.58rem;color:white;font-weight:500;opacity:${status.phase.startsWith(p.l)||status.phase===p.l+' Week'?1:0.45}">${p.d}</div>`).join('')}
+    </div>
+    <div style="display:flex;gap:3px;margin-top:3px">
+      ${phases.map(p=>`<div style="flex:${p.flex};font-size:0.58rem;color:var(--muted);text-align:center">${p.l}</div>`).join('')}
+    </div>`;
+}
+
+// ── PUMP TIME ───────────────────────────────────────────────────────
+function fmtMins(mins){
+  if(!mins)return'0:00';
+  const h=Math.floor(mins/60);
+  const m=mins%60;
+  return h>0?`${h}h ${m}m`:`${m}m`;
+}
+
+async function updatePumpBanners(){
+  const all=await getAllSessions();
+  const now=new Date();
+  const todayStr=now.toDateString();
+  const weekStart=new Date(now);
+  weekStart.setDate(now.getDate()-now.getDay());
+  weekStart.setHours(0,0,0,0);
+
+  let todayMins=0,weekMins=0;
+  all.forEach(s=>{
+    if(!s.duration)return;
+    const d=new Date(s.date);
+    if(d.toDateString()===todayStr)todayMins+=s.duration;
+    if(d>=weekStart)weekMins+=s.duration;
+  });
+
+  document.getElementById('pump-today').textContent=fmtMins(todayMins);
+  document.getElementById('pump-week').textContent=fmtMins(weekMins);
+}
+
+// ── TIMER ───────────────────────────────────────────────────────────
+let timerInterval=null,timerSec=0,timerRunning=false;
+function updateTimerDisplay(){
+  document.getElementById('timer-display').textContent=
+    `${String(Math.floor(timerSec/60)).padStart(2,'0')}:${String(timerSec%60).padStart(2,'0')}`;
+}
+function startTimer(){
+  if(timerRunning)return;
+  timerRunning=true;
+  document.getElementById('btn-start').style.display='none';
+  document.getElementById('btn-stop').style.display='inline-block';
+  timerInterval=setInterval(()=>{timerSec++;updateTimerDisplay()},1000);
+}
+function stopTimer(){
+  clearInterval(timerInterval);timerRunning=false;
+  document.getElementById('btn-start').style.display='inline-block';
+  document.getElementById('btn-stop').style.display='none';
+  if(timerSec>0)document.getElementById('duration').value=Math.max(1,Math.round(timerSec/60));
+}
+function resetTimer(){stopTimer();timerSec=0;updateTimerDisplay();document.getElementById('duration').value='';}
+
+// ── PILLS & YES/NO ──────────────────────────────────────────────────
+function togglePill(el,single){
+  if(single)el.closest('.pill-group').querySelectorAll('.pill').forEach(p=>p.classList.remove('selected'));
+  el.classList.toggle('selected');
+}
+function getPills(id){return Array.from(document.querySelectorAll(`#${id} .pill.selected`)).map(p=>p.textContent.trim());}
+const ynState={fluid:null,nursing:null,sex:null,orgasm:null};
+function toggleYesNo(el,base){
+  el.closest('.pill-group').querySelectorAll('.pill').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+  const isYes=el.classList.contains('yes-pill');
+  ynState[base]=isYes?'Yes':'No';
+  const fields=document.getElementById(`${base}-yes-fields`);
+  if(fields)fields.classList.toggle('visible',isYes);
+}
+
+// ── STARS ───────────────────────────────────────────────────────────
+let currentStars=0;
+function setStars(n){currentStars=n;document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('lit',i<n));}
+
+// ── SAVE SESSION ────────────────────────────────────────────────────
+async function saveSession(){
+  const now=new Date();
+  const dur=+document.getElementById('duration').value||(timerSec>0?Math.max(1,Math.round(timerSec/60)):0);
+  const cycleStatus=getCycleStatus(now.toISOString());
+  const session={
+    date:now.toISOString(),
+    dateLabel:now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),
+    timeLabel:now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
+    type:'session',
+    phase:getPills('pg-phase').join(', ')||(cycleStatus?cycleStatus.phase:'—'),
+    cycleDay:document.getElementById('cycle-day').value||(cycleStatus?cycleStatus.cycleDay:'—'),
+    sleep:+document.getElementById('sleep-slider').value,
+    mood:getPills('pg-mood').join(', ')||'—',
+    mode:getPills('pg-mode').join(', ')||'—',
+    pattern:getPills('pg-pattern').join(', ')||'—',
+    suction:+document.getElementById('suction-slider').value,
+    massage:+document.getElementById('massage-slider').value,
+    flangeSize:document.getElementById('flange-size').value||'—',
+    placement:getPills('pg-placement').join(', ')||'—',
+    duration:dur,
+    nippleColor:+document.getElementById('nipple-color').value,
+    nippleEngorgement:+document.getElementById('nipple-engorgement').value,
+    nippleTexture:+document.getElementById('nipple-texture').value,
+    nippleSensitivity:+document.getElementById('nipple-sensitivity').value,
+    nippleNotes:document.getElementById('nipple-notes').value,
+    breastFullness:+document.getElementById('breast-fullness').value,
+    breastFirmness:+document.getElementById('breast-firmness').value,
+    breastWeight:+document.getElementById('breast-weight').value,
+    breastNotes:document.getElementById('breast-notes').value,
+    skinFlush:+document.getElementById('skin-flush').value,
+    skinWarmth:+document.getElementById('skin-warmth').value,
+    skinTexture:+document.getElementById('skin-texture').value,
+    fluidPresent:ynState['fluid']||'—',
+    fluidVolume:getPills('pg-fluid-vol').join(', ')||'—',
+    fluidAppearance:getPills('pg-fluid-app').join(', ')||'—',
+    fluidSide:getPills('pg-fluid-side').join(', ')||'—',
+    fluidNotes:document.getElementById('fluid-notes').value,
+    arousal:+document.getElementById('arousal-slider').value,
+    sessionType:getPills('pg-type').join(', ')||'—',
+    initiation:getPills('pg-initiation').join(', ')||'—',
+    nursing:ynState['nursing']||'—',
+    sexIncorporated:ynState['sex']||'—',
+    sexActivity:'—',
+    orgasm:ynState['orgasm']||'—',
+    orgasmIntensity:ynState['orgasm']==='Yes'?+document.getElementById('orgasm-intensity').value:0,
+    comfort:+document.getElementById('comfort-slider').value,
+    pleasure:+document.getElementById('pleasure-slider').value,
+    responses:getPills('pg-response').join(', ')||'—',
+    rating:currentStars,
+    observations:document.getElementById('observations').value,
+    herFeedback:document.getElementById('her-feedback').value,
+    nextAdjustments:document.getElementById('next-adjustments').value,
+  };
+  await addSession(session);
+  showToast('Session saved ♥');
+  resetForm();
+  updatePumpBanners();
+  syncToServer();
+}
+
+function resetForm(){
+  document.querySelectorAll('#view-log .pill.selected').forEach(p=>p.classList.remove('selected'));
+  document.querySelectorAll('#view-log .conditional.visible').forEach(c=>c.classList.remove('visible'));
+  Object.keys(ynState).forEach(k=>ynState[k]=null);
+  [['suction-slider','sl-s',5],['massage-slider','sl-m',5],
+   ['nipple-color','sl-nc',0],['nipple-engorgement','sl-ne',0],['nipple-texture','sl-nt',0],['nipple-sensitivity','sl-ns',0],
+   ['breast-fullness','sl-bf',0],['breast-firmness','sl-bfm',0],['breast-weight','sl-bw',0],
+   ['skin-flush','sl-sk',0],['skin-warmth','sl-sw',0],['skin-texture','sl-st',0],
+   ['arousal-slider','sl-ar',3],['orgasm-intensity','sl-oi',3],
+   ['comfort-slider','sl-c',3],['pleasure-slider','sl-pl',3],['sleep-slider','sl-slp',3],
+  ].forEach(([id,lbl,val])=>{document.getElementById(id).value=val;document.getElementById(lbl).textContent=val;});
+  document.getElementById('flange-size').value='';
+  document.getElementById('duration').value='';
+  ['nipple-notes','breast-notes','fluid-notes','observations','her-feedback','next-adjustments'].forEach(id=>document.getElementById(id).value='');
+  setStars(0);resetTimer();
+  updateCycleBanner();
+}
+
+// ── DAILY MOOD ──────────────────────────────────────────────────────
+async function saveDailyMood(){
+  const now=new Date();
+  const cs=getCycleStatus();
+  const sleepSlider=document.getElementById('daily-sleep-slider');
+  const entry={
+    date:now.toISOString(),
+    dateLabel:now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}),
+    timeLabel:now.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
+    type:'mood',
+    mood:getPills('pg-daily-mood').join(', ')||'—',
+    physicalSymptoms:getPills('pg-daily-physical').join(', ')||'—',
+    sexualDesire:getPills('pg-daily-desire').join(', ')||'—',
+    wellbeing:+document.getElementById('wellbeing-slider').value,
+    sleep:+sleepSlider.value,
+    notes:document.getElementById('daily-mood-notes').value,
+    phase:cs?cs.phase:'—',
+    cycleDay:cs?cs.cycleDay:'—',
+    // His fields
+    hisMood:getPills('pg-his-mood').join(', ')||'—',
+    hisPhysical:getPills('pg-his-physical').join(', ')||'—',
+    hisDesire:getPills('pg-his-desire').join(', ')||'—',
+    hisWellbeing:+document.getElementById('his-wellbeing-slider').value,
+    hisSleep:+document.getElementById('his-sleep-slider').value,
+    hisNotes:document.getElementById('his-mood-notes').value,
+  };
+  await addMood(entry);
+  // Reset form
+  document.querySelectorAll('#pg-daily-mood .pill.selected').forEach(p=>p.classList.remove('selected'));
+  document.querySelectorAll('#pg-daily-physical .pill.selected').forEach(p=>p.classList.remove('selected'));
+  document.querySelectorAll('#pg-daily-desire .pill.selected').forEach(p=>p.classList.remove('selected'));
+  document.getElementById('wellbeing-slider').value=3;document.getElementById('sl-wb').textContent='3';
+  document.getElementById('daily-mood-notes').value='';
+  document.querySelectorAll('#pg-his-mood .pill.selected').forEach(p=>p.classList.remove('selected'));
+  document.querySelectorAll('#pg-his-physical .pill.selected').forEach(p=>p.classList.remove('selected'));
+  document.querySelectorAll('#pg-his-desire .pill.selected').forEach(p=>p.classList.remove('selected'));
+  document.getElementById('his-wellbeing-slider').value=3;document.getElementById('sl-his-wb').textContent='3';
+  document.getElementById('his-sleep-slider').value=3;document.getElementById('sl-his-slp').textContent='3';
+  document.getElementById('his-mood-notes').value='';
+  const msg=document.getElementById('mood-saved-msg');
+  msg.style.display='block';setTimeout(()=>msg.style.display='none',2000);
+  renderMoodPage();
+  syncToServer();
+}
+
+// Check if sleep was already logged today and return that value or null
+async function getTodaySleepValue(){
+  const moods=await getAllMoods();
+  const todayStr=new Date().toDateString();
+  const todayEntry=moods.filter(m=>new Date(m.date).toDateString()===todayStr&&m.sleep>0)
+    .sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+  return todayEntry?todayEntry.sleep:null;
+}
+
+async function renderTodaySummary(){
+  const wrap=document.getElementById('mood-today-summary');
+  if(!wrap)return;
+  const now=new Date();
+  const todayStr=now.toDateString();
+  const cs=getCycleStatus();
+  const [sessions,moods,intimacy]=await Promise.all([getAllSessions(),getAllMoods(),getAllIntimacy()]);
+
+  const todaySessions=sessions.filter(s=>new Date(s.date).toDateString()===todayStr);
+  const todayMoods=moods.filter(m=>new Date(m.date).toDateString()===todayStr);
+  const todayIntimacy=intimacy.filter(i=>new Date(i.date).toDateString()===todayStr);
+
+  const pumpMins=todaySessions.reduce((s,e)=>s+(e.duration||0),0);
+  const lastMood=todayMoods.sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+
+  if(!cs&&!pumpMins&&!todayMoods.length&&!todayIntimacy.length){wrap.innerHTML='';return;}
+
+  wrap.innerHTML=`
+    <div style="background:var(--card);border-radius:18px;padding:16px 18px;margin-bottom:14px;box-shadow:0 2px 10px var(--shadow);border:1px solid var(--border)">
+      <div style="font-size:0.66rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);font-weight:500;margin-bottom:12px">Today</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${cs?`<div style="background:var(--cream);border-radius:12px;padding:10px 12px;border:1px solid ${cs.color}20">
+          <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);font-weight:500">Cycle</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:400;color:var(--text);margin-top:2px">${cs.phase.split(' ')[0]}</div>
+          <div style="font-size:0.68rem;color:var(--muted)">Day ${cs.cycleDay}</div>
+        </div>`:''}
+        ${pumpMins?`<div style="background:var(--cream);border-radius:12px;padding:10px 12px;border:1px solid var(--border)">
+          <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);font-weight:500">Pump</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:400;color:var(--teal);margin-top:2px">${fmtMins(pumpMins)}</div>
+          <div style="font-size:0.68rem;color:var(--muted)">${todaySessions.length} session${todaySessions.length!==1?'s':''}</div>
+        </div>`:''}
+        ${lastMood?`<div style="background:var(--cream);border-radius:12px;padding:10px 12px;border:1px solid var(--border)">
+          <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);font-weight:500">Last Mood</div>
+          <div style="font-size:0.76rem;color:var(--text-light);margin-top:4px;line-height:1.3">${lastMood.mood&&lastMood.mood!=='—'?lastMood.mood.split(', ').slice(0,3).join(', '):'—'}</div>
+          <div style="font-size:0.64rem;color:var(--muted);margin-top:2px">Wellbeing ${lastMood.wellbeing}/5</div>
+        </div>`:''}
+        ${todayIntimacy.length?`<div style="background:var(--cream);border-radius:12px;padding:10px 12px;border:1px solid var(--border)">
+          <div style="font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);font-weight:500">Intimacy</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;color:#a07890;margin-top:2px">${todayIntimacy.length} entry${todayIntimacy.length!==1?'s':''}</div>
+        </div>`:''}
+      </div>
+      ${todayMoods.length>0?`<div style="margin-top:10px;font-size:0.68rem;color:var(--muted);text-align:center">${todayMoods.length} check-in${todayMoods.length!==1?'s':''} today · tap History to view all</div>`:''}
+    </div>`;
+}
+
+async function applySleepLock(){
+  const val=await getTodaySleepValue();
+  const slider=document.getElementById('daily-sleep-slider');
+  const label=document.getElementById('sleep-field-label');
+  const wrap=document.getElementById('sleep-field-wrap');
+  if(!slider||!label||!wrap)return;
+  if(val!==null){
+    slider.value=val;
+    slider.disabled=true;
+    slider.style.opacity='0.4';
+    document.getElementById('sl-dslp').textContent=val;
+    label.innerHTML=`Sleep Last Night <span style="color:var(--teal)">${val}</span>/5 <span style="font-size:0.65rem;color:var(--muted);font-style:italic;text-transform:none;letter-spacing:0">— already logged today</span>`;
+  } else {
+    slider.disabled=false;
+    slider.style.opacity='1';
+    label.innerHTML=`Sleep Last Night <span id="sl-dslp" style="color:var(--teal)">${slider.value}</span>/5`;
+  }
+}
+
+async function renderMoodPage(){
+  try{ await renderTodaySummary(); }catch(e){ console.warn('renderTodaySummary:', e.message); }
+  try{ await applySleepLock(); }catch(e){ console.warn('applySleepLock:', e.message); }
+  try{ await renderRecentMoods(); }catch(e){ console.warn('renderRecentMoods:', e.message); }
+}
+
+async function renderRecentMoods(){
+  const all=(await getAllMoods()).reverse().slice(0,10);
+  const el=document.getElementById('recent-moods');
+  if(!all.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:0.82rem;font-style:italic">No check-ins yet</div>';return;}
+  el.innerHTML=`<div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;font-weight:500">Recent Check-ins</div>`+
+    all.map(m=>`
+      <div class="mood-card" onclick="openMoodModal(${m.id})">
+        <div class="mood-card-header">
+          <span class="mood-card-date">${m.dateLabel} · ${m.timeLabel}</span>
+          <span class="mood-card-type">Wellbeing ${m.wellbeing||'?'}/5 · Sleep ${m.sleep||'?'}/5</span>
+        </div>
+        ${m.mood&&m.mood!=='—'?`<div style="font-size:0.76rem;color:var(--text-light);margin-bottom:4px">${m.mood}</div>`:''}
+        ${m.physicalSymptoms&&m.physicalSymptoms!=='—'?`<div style="font-size:0.7rem;color:var(--muted);font-style:italic">Symptoms: ${m.physicalSymptoms}</div>`:''}
+        ${m.sexualDesire&&m.sexualDesire!=='—'?`<div style="font-size:0.7rem;color:var(--rose);margin-top:2px">Desire: ${m.sexualDesire}</div>`:''}
+        ${m.notes?`<div style="font-size:0.72rem;color:var(--muted);margin-top:5px;font-style:italic">${m.notes.substring(0,80)}${m.notes.length>80?'…':''}</div>`:''}
+        ${m.hisMood&&m.hisMood!=='—'?`<div style="font-size:0.68rem;color:#5560c0;margin-top:5px;border-top:1px solid var(--border);padding-top:4px">Him: ${m.hisMood.split(', ').slice(0,3).join(', ')}</div>`:''}
+      </div>`).join('');
+}
+
+async function openMoodModal(id){
+  const all=await getAllMoods();
+  const m=all.find(x=>x.id===id);if(!m)return;
+  const row=(k,v)=>`<div class="modal-row"><span class="mkey">${k}</span><span class="mval">${v||'—'}</span></div>`;
+  document.getElementById('modal-body').innerHTML=`
+    <h2>Daily Check-in</h2>
+    <div class="modal-subtitle">${m.dateLabel} · ${m.timeLabel}</div>
+    ${row('Phase',m.phase)}${row('Cycle Day',m.cycleDay)}
+    ${row('Mood',m.mood)}
+    ${m.physicalSymptoms&&m.physicalSymptoms!=='—'?row('Physical Symptoms',m.physicalSymptoms):''}
+    ${m.sexualDesire&&m.sexualDesire!=='—'?row('Sexual Desire',m.sexualDesire):''}
+    ${row('Wellbeing',m.wellbeing+'/5')}${row('Sleep',m.sleep+'/5')}
+    ${m.notes?row('Notes',m.notes):''}
+    ${m.hisMood&&m.hisMood!=='—'?`<div class="modal-section">For Him</div>${row('His Mood',m.hisMood)}${m.hisPhysical&&m.hisPhysical!=='—'?row('His Physical',m.hisPhysical):''}${m.hisDesire&&m.hisDesire!=='—'?row('His Desire',m.hisDesire):''}${row('His Wellbeing',m.hisWellbeing+'/5')}${row('His Sleep',m.hisSleep+'/5')}${m.hisNotes?row('His Notes',m.hisNotes):''}`:'' }
+    <button class="btn-delete" onclick="confirmDeleteMood(${id})">Delete this entry</button>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+async function confirmDeleteMood(id){
+  if(!confirm('Delete this mood entry?'))return;
+  await deleteMood(id);
+  document.getElementById('modal-overlay').classList.remove('open');
+  showToast('Deleted');renderRecentMoods();
+  syncToServer();
+}
+
+// ── SUMMARY VIEW ─────────────────────────────────────────────────────
+async function renderSummary(){
+  const sessions=(await getAllSessions()).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const moods=(await getAllMoods()).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const el=document.getElementById('summary-content');
+  if(!sessions.length&&!moods.length){
+    el.innerHTML=`<div class="empty-state"><div class="icon">♥</div><p>Log sessions to see your summary.</p></div>`;return;
+  }
+
+  const now=new Date();
+  const todayStr=now.toDateString();
+  const weekStart=new Date(now);weekStart.setDate(now.getDate()-now.getDay());weekStart.setHours(0,0,0,0);
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+
+  // Pump time calculations
+  let todayMins=0,weekMins=0,monthMins=0,allTimeMins=0;
+  const dayMap={};
+  sessions.forEach(s=>{
+    if(!s.duration)return;
+    const d=new Date(s.date);
+    const ds=d.toDateString();
+    dayMap[ds]=(dayMap[ds]||0)+s.duration;
+    allTimeMins+=s.duration;
+    if(ds===todayStr)todayMins+=s.duration;
+    if(d>=weekStart)weekMins+=s.duration;
+    if(d>=monthStart)monthMins+=s.duration;
+  });
+
+  // Sessions per day of week
+  const dowCounts=[0,0,0,0,0,0,0];
+  const dowMins=[0,0,0,0,0,0,0];
+  sessions.forEach(s=>{const d=new Date(s.date);dowCounts[d.getDay()]++;dowMins[d.getDay()]+=(s.duration||0);});
+  const dowLabels=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const maxDowMins=Math.max(...dowMins,1);
+
+  // Mood summary
+  const recentMoods=moods.slice(-7);
+  const moodFreq={};
+  recentMoods.forEach(m=>{if(m.mood&&m.mood!=='—')m.mood.split(', ').forEach(v=>{moodFreq[v]=(moodFreq[v]||0)+1;});});
+  const avgWb=recentMoods.length?(recentMoods.reduce((a,m)=>a+m.wellbeing,0)/recentMoods.length).toFixed(1):'—';
+  const avgSleep=recentMoods.length?(recentMoods.reduce((a,m)=>a+m.sleep,0)/recentMoods.length).toFixed(1):'—';
+
+  const cycleStatus=getCycleStatus();
+
+  el.innerHTML=`
+    ${cycleStatus?`
+    <div class="cycle-banner ${cycleStatus.phaseClass}" style="margin-bottom:14px">
+      <div class="banner-row">
+        <div><div class="banner-phase">${cycleStatus.phase}</div><div class="banner-day">Day ${cycleStatus.cycleDay} of 28</div></div>
+        <div class="banner-dot" style="background:${cycleStatus.color}"></div>
+      </div>
+      <div class="banner-note" style="margin-top:6px">${cycleStatus.note}</div>
+    </div>`:''}
+
+    <div class="summary-section">
+      <div class="summary-title">Pump Time</div>
+      <div class="summary-grid">
+        <div class="summary-stat"><div class="summary-stat-val">${fmtMins(todayMins)}</div><div class="summary-stat-label">Today</div></div>
+        <div class="summary-stat"><div class="summary-stat-val">${fmtMins(weekMins)}</div><div class="summary-stat-label">This Week</div></div>
+        <div class="summary-stat"><div class="summary-stat-val">${fmtMins(monthMins)}</div><div class="summary-stat-label">This Month</div></div>
+        <div class="summary-stat"><div class="summary-stat-val">${fmtMins(allTimeMins)}</div><div class="summary-stat-label">All Time</div></div>
+      </div>
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:14px 0 8px;font-weight:500">Minutes by Day of Week</div>
+      <div class="day-bar-wrap">
+        ${dowLabels.map((l,i)=>`
+          <div class="day-bar-row">
+            <div class="day-bar-label">${l}</div>
+            <div class="day-bar-track"><div class="day-bar-fill" style="width:${(dowMins[i]/maxDowMins*100).toFixed(0)}%"></div></div>
+            <div class="day-bar-num">${fmtMins(dowMins[i])}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <div class="summary-section">
+      <div class="summary-title">Session Stats</div>
+      <div class="summary-grid">
+        <div class="summary-stat"><div class="summary-stat-val" style="color:var(--rose)">${sessions.length}</div><div class="summary-stat-label">Total Sessions</div></div>
+        <div class="summary-stat"><div class="summary-stat-val" style="color:var(--rose)">${sessions.filter(s=>new Date(s.date)>=weekStart).length}</div><div class="summary-stat-label">This Week</div></div>
+        <div class="summary-stat"><div class="summary-stat-val" style="color:var(--rose)">${sessions.filter(s=>s.fluidPresent==='Yes').length}</div><div class="summary-stat-label">Fluid Sessions</div></div>
+        <div class="summary-stat"><div class="summary-stat-val" style="color:var(--rose)">${sessions.filter(s=>s.orgasm==='Yes').length}</div><div class="summary-stat-label">Orgasms</div></div>
+      </div>
+    </div>
+
+    ${recentMoods.length?`
+    <div class="summary-section">
+      <div class="summary-title">Mood (Last 7 Days)</div>
+      <div class="summary-grid">
+        <div class="summary-stat"><div class="summary-stat-val">${avgWb}</div><div class="summary-stat-label">Avg Wellbeing</div></div>
+        <div class="summary-stat"><div class="summary-stat-val">${avgSleep}</div><div class="summary-stat-label">Avg Sleep</div></div>
+      </div>
+      ${Object.keys(moodFreq).length?`
+      <div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin:12px 0 8px;font-weight:500">Most Common Moods</div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px">
+        ${Object.entries(moodFreq).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([m,c])=>`
+          <span style="font-size:0.74rem;padding:4px 10px;border-radius:12px;background:var(--cream);border:1px solid var(--border);color:var(--text-light)">${m} <strong style="color:var(--rose)">${c}</strong></span>`).join('')}
+      </div>`:''}
+    </div>`:''}
+  `;
+}
+
+// ── HISTORY ─────────────────────────────────────────────────────────
+async function renderHistory(){
+  const el=document.getElementById('history-list');
+  const [sessions, moods, intimacy] = await Promise.all([getAllSessions(), getAllMoods(), getAllIntimacy()]);
+
+  const TYPE_LABELS = {session:'Pump Session', mood:'Mood Check-in', intimacy:'Intimacy'};
+  const TYPE_COLORS = {session:'var(--rose)', mood:'var(--teal)', intimacy:'#a07890'};
+  const TYPE_BG     = {session:'var(--blush)', mood:'var(--teal-light)', intimacy:'#ede0ea'};
+
+  const all = [
+    ...sessions.map(e=>Object.assign({},e,{_type:'session'})),
+    ...moods.map(e=>Object.assign({},e,{_type:'mood'})),
+    ...intimacy.map(e=>Object.assign({},e,{_type:'intimacy'})),
+  ].sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  if(!all.length){
+    el.innerHTML='<div class="empty-state"><div class="icon">♥</div><p>No entries yet.</p></div>';
+    return;
+  }
+
+  const filterEl = document.getElementById('history-filter');
+  const activeFilter = filterEl ? filterEl.value : 'all';
+  const filtered = activeFilter==='all' ? all : all.filter(e=>e._type===activeFilter);
+
+  // Build filter bar
+  let html = '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">';
+  ['all','session','mood','intimacy'].forEach(f=>{
+    const active = f===activeFilter;
+    const label = f==='all'?'All':TYPE_LABELS[f];
+    html += '<button onclick="setHistoryFilter(\''+f+'\')" style="padding:6px 14px;border-radius:14px;border:1.5px solid '+(active?'var(--rose)':'var(--border)')+';background:'+(active?'var(--blush)':'transparent')+';font-family:\'DM Sans\',sans-serif;font-size:0.72rem;color:'+(active?'var(--rose-deep)':'var(--muted)')+';cursor:pointer;font-weight:'+(active?500:400)+'">'+label+'</button>';
+  });
+  html += '</div>';
+
+  // Build cards
+  filtered.forEach(e=>{
+    const color = PHASE_COLORS[e.phase]||'var(--border)';
+    const tc = TYPE_COLORS[e._type]||'var(--rose)';
+    const tb = TYPE_BG[e._type]||'var(--blush)';
+    const tl = TYPE_LABELS[e._type]||'Entry';
+    const typeBadge = '<span style="font-size:0.64rem;padding:2px 8px;border-radius:8px;background:'+tb+';color:'+tc+';font-weight:500">'+tl+'</span>';
+
+    if(e._type==='session'){
+      html += '<div class="session-card" onclick="openModal('+e.id+')"><div class="card-header"><div>';
+      html += '<div class="card-date">'+e.dateLabel+' · '+e.timeLabel+'</div>';
+      html += '<div class="card-meta"><span class="phase-dot" style="background:'+color+'"></span>'+(e.phase||'—')+(e.cycleDay&&e.cycleDay!=='—'?' · Day '+e.cycleDay:'')+'</div>';
+      html += '</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'+typeBadge+(e.duration?'<span class="card-badge">'+e.duration+' min</span>':'')+'</div></div>';
+      html += '<div class="card-chips">';
+      if(e.mode&&e.mode!=='—') html += '<span class="chip">'+e.mode+'</span>';
+      html += '<span class="chip">Comfort '+e.comfort+'/5</span><span class="chip">Pleasure '+e.pleasure+'/5</span><span class="chip">Arousal '+e.arousal+'/5</span>';
+      if(e.orgasm==='Yes') html += '<span class="chip hl">Orgasm ♥ '+e.orgasmIntensity+'/5</span>';
+      if(e.fluidPresent==='Yes') html += '<span class="chip hl">Fluid: '+e.fluidVolume+'</span>';
+      if(e.rating>0) html += '<span class="chip">'+'♥'.repeat(e.rating)+'</span>';
+      html += '</div>';
+      if(e.observations) html += '<div class="card-note">'+e.observations.substring(0,100)+(e.observations.length>100?'…':'')+'</div>';
+      html += '</div>';
+
+    } else if(e._type==='mood'){
+      html += '<div class="session-card" onclick="openMoodModal('+e.id+')" style="border-left:3px solid '+tc+'"><div class="card-header"><div>';
+      html += '<div class="card-date">'+e.dateLabel+' · '+e.timeLabel+'</div>';
+      html += '<div class="card-meta">'+(e.phase||'—')+(e.cycleDay&&e.cycleDay!=='—'?' · Day '+e.cycleDay:'')+'</div>';
+      html += '</div>'+typeBadge+'</div>';
+      html += '<div class="card-chips"><span class="chip">Wellbeing '+(e.wellbeing||'?')+'/5</span><span class="chip">Sleep '+(e.sleep||'?')+'/5</span></div>';
+      if(e.mood&&e.mood!=='—') html += '<div class="card-note">'+e.mood+'</div>';
+      if(e.hisMood&&e.hisMood!=='—') html += '<div style="font-size:0.68rem;color:#5560c0;margin-top:4px;border-top:1px solid var(--border);padding-top:4px">Him: '+e.hisMood.split(', ').slice(0,3).join(', ')+'</div>';
+      html += '</div>';
+
+    } else if(e._type==='intimacy'){
+      html += '<div class="session-card" onclick="openIntimacyModal('+e.id+')" style="border-left:3px solid '+tc+'"><div class="card-header"><div>';
+      html += '<div class="card-date">'+e.dateLabel+' · '+e.timeLabel+'</div>';
+      html += '<div class="card-meta">'+(e.phase||'—')+(e.duration?' · '+e.duration+' min':'')+'</div>';
+      html += '</div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'+typeBadge+(e.rating>0?'<span class="card-badge">'+'♥'.repeat(e.rating)+'</span>':'')+'</div></div>';
+      html += '<div class="card-chips">';
+      if(e.activities&&Object.keys(e.activities).length) Object.keys(e.activities).slice(0,3).forEach(k=>{ html += '<span class="chip">'+k.replace('act_','').replace(/_/g,' ')+'</span>'; });
+      else if(e.positions&&e.positions!=='—') e.positions.split(', ').slice(0,3).forEach(p=>{ html += '<span class="chip">'+p+'</span>'; });
+      if(e.herOrgasm==='Yes') html += '<span class="chip hl">Her: '+(e.herOrgasmCount||1)+'×</span>';
+      if(e.myOrgasm==='Yes') html += '<span class="chip hl">Finished ✓</span>';
+      html += '</div>';
+      if(e.notes) html += '<div class="card-note">'+e.notes.substring(0,100)+(e.notes.length>100?'…':'')+'</div>';
+      html += '</div>';
+    }
+  });
+
+  el.innerHTML = html;
+}
+
+function setHistoryFilter(f){
+  const el=document.getElementById('history-filter');
+  if(el)el.value=f;
+  renderHistory();
+}
+
+// ── MODAL ────────────────────────────────────────────────────────────
+async function openModal(id){
+  const all=await getAllSessions();
+  const s=all.find(x=>x.id===id);if(!s)return;
+  const row=(k,v)=>`<div class="modal-row"><span class="mkey">${k}</span><span class="mval">${v||'—'}</span></div>`;
+  const sec=t=>`<div class="modal-section">${t}</div>`;
+  document.getElementById('modal-body').innerHTML=`
+    <h2>${s.dateLabel}</h2><div class="modal-subtitle">${s.timeLabel}${s.duration?' · '+s.duration+' min':''}</div>
+    ${sec('Cycle & Context')}${row('Phase',s.phase)}${row('Cycle Day',s.cycleDay)}${row('Sleep',s.sleep?s.sleep+'/5':'—')}${row('Mood',s.mood)}
+    ${sec('Device')}${row('Mode',s.mode)}${row('Pattern',s.pattern)}${row('Suction',s.suction+'/10')}${row('Massage',s.massage+'/10')}${row('Flange',s.flangeSize)}${row('Placement',s.placement)}
+    ${sec('Nipple')}${row('Colour',s.nippleColor+'/5')}${row('Engorgement',s.nippleEngorgement+'/5')}${row('Texture',s.nippleTexture+'/5')}${row('Sensitivity',s.nippleSensitivity+'/5')}${s.nippleNotes?row('Notes',s.nippleNotes):''}
+    ${sec('Breast Tissue')}${row('Fullness',s.breastFullness+'/5')}${row('Firmness',s.breastFirmness+'/5')}${row('Heaviness',s.breastWeight+'/5')}${s.breastNotes?row('Notes',s.breastNotes):''}
+    ${sec('Skin')}${row('Flushing',s.skinFlush+'/5')}${row('Warmth',s.skinWarmth+'/5')}${row('Texture',s.skinTexture+'/5')}
+    ${sec('Fluid')}${row('Present',s.fluidPresent)}${s.fluidPresent==='Yes'?row('Volume',s.fluidVolume)+row('Appearance',s.fluidAppearance)+row('Side',s.fluidSide)+(s.fluidNotes?row('Notes',s.fluidNotes):''):''}
+    ${sec('Sexual')}${row('Arousal',s.arousal+'/5')}${row('Type',s.sessionType)}${row('Initiated By',s.initiation)}${row('Partner Nursing',s.nursing)}${row('In Sex',s.sexIncorporated)}${s.sexIncorporated==='Yes'?row('Activity',s.sexActivity):''}${row('Orgasm',s.orgasm)}${s.orgasm==='Yes'?row('Intensity',s.orgasmIntensity+'/5'):''}
+    ${sec('Sensation')}${row('Comfort',s.comfort+'/5')}${row('Pleasure',s.pleasure+'/5')}${row('Responses',s.responses)}${row('Rating',s.rating>0?'♥'.repeat(s.rating):'—')}
+    ${s.observations||s.herFeedback||s.nextAdjustments?sec('Notes'):''}
+    ${s.observations?row('Observations',s.observations):''}${s.herFeedback?row('Her Feedback',s.herFeedback):''}${s.nextAdjustments?row('Next',s.nextAdjustments):''}
+    <button class="btn-delete" onclick="confirmDeleteSession(${id})">Delete this session</button>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(e){if(e.target===document.getElementById('modal-overlay'))document.getElementById('modal-overlay').classList.remove('open');}
+async function confirmDeleteSession(id){
+  if(!confirm('Delete this session?'))return;
+  await deleteSession(id);
+  document.getElementById('modal-overlay').classList.remove('open');
+  showToast('Deleted');renderHistory();updatePumpBanners();
+  syncToServer();
+}
+
+// ── TRENDS ───────────────────────────────────────────────────────────
+const CHART_METRICS=[
+  {key:'comfort',label:'Comfort',color:'#c47a6a',max:5},
+  {key:'pleasure',label:'Pleasure',color:'#d4956a',max:5},
+  {key:'arousal',label:'Arousal',color:'#a85f50',max:5},
+  {key:'sleep',label:'Sleep',color:'#7a9ab0',max:5},
+  {key:'rating',label:'Rating',color:'#b08868',max:5},
+  {key:'nippleSensitivity',label:'Nipple Sens.',color:'#cc8888',max:5},
+  {key:'breastFullness',label:'Fullness',color:'#d4b090',max:5},
+  {key:'nippleEngorgement',label:'Engorgement',color:'#c09080',max:5},
+  {key:'orgasmIntensity',label:'Orgasm Int.',color:'#8b5a5a',max:5},
+  {key:'duration',label:'Duration',color:'#9e8880',max:null},
+];
+let activeMetrics=['comfort','pleasure','arousal','sleep'];
+
+async function renderTrends(){
+  const all=(await getAllSessions()).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const moods=(await getAllMoods()).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  const el=document.getElementById('trends-content');
+  if(!all.length){el.innerHTML=`<div class="empty-state"><div class="icon">♥</div><p>Trends appear after your first session.</p></div>`;return;}
+
+  const avg=arr=>{const f=arr.filter(v=>v!=null&&+v>0);return f.length?(f.reduce((a,b)=>a+(+b),0)/f.length).toFixed(1):'—';};
+  const freqMap=key=>{const m={};all.forEach(s=>{if(s[key]&&s[key]!=='—')s[key].split(', ').forEach(v=>{m[v]=(m[v]||0)+1})});return m};
+  const barHtml=map=>{
+    const mx=Math.max(...Object.values(map),1);
+    return Object.entries(map).sort((a,b)=>b[1]-a[1]).map(([k,c])=>`
+      <div class="bar-row"><div class="bar-label">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(c/mx*100).toFixed(0)}%"></div></div>
+      <div class="bar-num">${c}</div></div>`).join('');
+  };
+
+  const orgasms=all.filter(s=>s.orgasm==='Yes');
+  const fluidSessions=all.filter(s=>s.fluidPresent==='Yes');
+  const phaseCounts=freqMap('phase');
+  const moodFreqAll={};
+  all.forEach(s=>{if(s.mood&&s.mood!=='—')s.mood.split(', ').forEach(v=>{moodFreqAll[v]=(moodFreqAll[v]||0)+1;});});
+  moods.forEach(m=>{if(m.mood&&m.mood!=='—')m.mood.split(', ').forEach(v=>{moodFreqAll[v]=(moodFreqAll[v]||0)+1;});});
+
+  // Phase vs metrics
+  const phaseMetrics={};
+  Object.keys(PHASE_COLORS).forEach(ph=>{
+    const ps=all.filter(s=>s.phase===ph);
+    if(!ps.length)return;
+    phaseMetrics[ph]={n:ps.length,pleasure:avg(ps.map(s=>s.pleasure)),arousal:avg(ps.map(s=>s.arousal)),comfort:avg(ps.map(s=>s.comfort)),nippleSens:avg(ps.map(s=>s.nippleSensitivity)),orgasmRate:Math.round(ps.filter(s=>s.orgasm==='Yes').length/ps.length*100),sleep:avg(ps.map(s=>s.sleep))};
+  });
+
+  const sleepGroups={poor:all.filter(s=>s.sleep<=2),fair:all.filter(s=>s.sleep===3),good:all.filter(s=>s.sleep>=4)};
+
+  el.innerHTML=`
+    <div class="trend-grid">
+      ${[['Sessions',all.length,''],['Avg Duration',avg(all.map(s=>s.duration).filter(Boolean)),' min'],['Avg Comfort',avg(all.map(s=>s.comfort)),'/5'],['Avg Pleasure',avg(all.map(s=>s.pleasure)),'/5'],['Avg Arousal',avg(all.map(s=>s.arousal)),'/5'],['Avg Sleep',avg(all.map(s=>s.sleep)),'/5'],['Orgasm Rate',all.length?Math.round(orgasms.length/all.length*100)+'%':'—',''],['Fluid Rate',all.length?Math.round(fluidSessions.length/all.length*100)+'%':'—','']].map(([t,v,u])=>`<div class="trend-card"><div class="trend-title">${t}</div><div class="trend-value">${v}<span style="font-size:0.85rem">${u}</span></div></div>`).join('')}
+    </div>
+
+    <div class="chart-wrap">
+      <h3>Over Time</h3>
+      <div class="chart-tabs">${CHART_METRICS.map(m=>`<button class="chart-tab ${activeMetrics.includes(m.key)?'active':''}" onclick="toggleMetric('${m.key}',this)">${m.label}</button>`).join('')}</div>
+      <div id="chart-svg-wrap"></div>
+      <div class="chart-legend" id="chart-legend"></div>
+    </div>
+
+    ${Object.keys(phaseMetrics).length?`
+    <div class="trend-card-full">
+      <div class="trend-title">Metrics by Cycle Phase</div>
+      <div style="margin-top:10px">
+        ${Object.entries(phaseMetrics).map(([ph,m])=>`
+          <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+              <div style="width:9px;height:9px;border-radius:50%;background:${PHASE_COLORS[ph]}"></div>
+              <span style="font-size:0.76rem;font-weight:500">${ph}</span>
+              <span style="font-size:0.66rem;color:var(--muted)">(${m.n} session${m.n!==1?'s':''})</span>
+            </div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              ${[['Pleasure',m.pleasure],['Arousal',m.arousal],['Nipple',m.nippleSens],['Sleep',m.sleep],['Orgasm',m.orgasmRate+'%']].map(([l,v])=>`<span style="font-size:0.68rem;padding:3px 8px;border-radius:8px;background:var(--cream);border:1px solid var(--border);color:var(--text-light)">${l}: <strong>${v}</strong></span>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`:''}
+
+    ${all.some(s=>s.sleep)?`
+    <div class="trend-card-full">
+      <div class="trend-title">Sleep Quality vs Session Metrics</div>
+      <div style="margin-top:10px">
+        ${Object.entries(sleepGroups).filter(([,arr])=>arr.length).map(([label,arr])=>`
+          <div style="margin-bottom:10px">
+            <div style="font-size:0.7rem;color:var(--muted);margin-bottom:4px;text-transform:capitalize">${label} sleep (${label==='poor'?'1-2':label==='fair'?'3':'4-5'}) · ${arr.length} sessions</div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              ${[['Pleasure',avg(arr.map(s=>s.pleasure))],['Arousal',avg(arr.map(s=>s.arousal))],['Comfort',avg(arr.map(s=>s.comfort))]].map(([l,v])=>`<span style="font-size:0.68rem;padding:3px 8px;border-radius:8px;background:var(--cream);border:1px solid var(--border);color:var(--text-light)">${l}: <strong>${v}</strong></span>`).join('')}
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`:''}
+
+
+    ${moods.length>=2?`
+    <div class="chart-wrap" style="margin-bottom:12px">
+      <h3>Mood & Wellbeing Over Time</h3>
+      <div id="mood-cycle-chart-wrap"></div>
+      <div class="chart-legend" style="margin-top:8px">
+        <div class="legend-item"><div class="legend-dot" style="background:#7ab8b0"></div>Wellbeing</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a0a8c4"></div>Sleep</div>
+      </div>
+    </div>`:''}    
+    ${moods.length?`
+    <div class="trend-card-full" style="margin-bottom:12px">
+      <div class="trend-title">Mood Frequency by Cycle Phase</div>
+      <div id="mood-heatmap-wrap" style="margin-top:10px;overflow-x:auto"></div>
+    </div>`:''}    
+    <div class="trend-card-full">
+      <div class="trend-title">Avg Physical Changes</div>
+      <div class="bar-chart">
+        ${[['Nipple Sensitivity',avg(all.map(s=>s.nippleSensitivity))],['Nipple Engorgement',avg(all.map(s=>s.nippleEngorgement))],['Nipple Colour',avg(all.map(s=>s.nippleColor))],['Nipple Texture',avg(all.map(s=>s.nippleTexture))],['Breast Fullness',avg(all.map(s=>s.breastFullness))],['Breast Firmness',avg(all.map(s=>s.breastFirmness))],['Breast Heaviness',avg(all.map(s=>s.breastWeight))],['Skin Flushing',avg(all.map(s=>s.skinFlush))],['Skin Warmth',avg(all.map(s=>s.skinWarmth))]].map(([l,v])=>`
+          <div class="bar-row"><div class="bar-label">${l}</div><div class="bar-track"><div class="bar-fill" style="width:${v!=='—'?(+v/5*100).toFixed(0):0}%"></div></div><div class="bar-num">${v}</div></div>`).join('')}
+      </div>
+    </div>
+
+    ${Object.keys(moodFreqAll).length?`<div class="trend-card-full"><div class="trend-title">Mood Frequency (All Sources)</div><div class="bar-chart">${barHtml(moodFreqAll)}</div></div>`:''}
+    ${Object.keys(phaseCounts).length?`<div class="trend-card-full"><div class="trend-title">Phase Distribution</div><div class="bar-chart">${barHtml(phaseCounts)}</div></div>`:''}
+    ${Object.keys(freqMap('mode')).length?`<div class="trend-card-full"><div class="trend-title">Mode Usage</div><div class="bar-chart">${barHtml(freqMap('mode'))}</div></div>`:''}
+    ${Object.keys(freqMap('pattern')).length?`<div class="trend-card-full"><div class="trend-title">Pattern Usage</div><div class="bar-chart">${barHtml(freqMap('pattern'))}</div></div>`:''}
+    ${Object.keys(freqMap('responses')).length?`<div class="trend-card-full"><div class="trend-title">Response Frequency</div><div class="bar-chart">${barHtml(freqMap('responses'))}</div></div>`:''}
+    ${fluidSessions.length?`<div class="trend-card-full"><div class="trend-title">Fluid Volumes</div><div class="bar-chart">${barHtml(freqMap('fluidVolume'))}</div></div>`:''}
+    ${orgasms.length&&Object.keys(phaseCounts).length?`
+    <div class="trend-card-full"><div class="trend-title">Orgasm Rate by Phase</div><div class="bar-chart">
+      ${Object.entries(phaseCounts).map(([ph,total])=>{const n=orgasms.filter(s=>s.phase===ph).length;return`<div class="bar-row"><div class="bar-label">${ph.split(' ')[0]}</div><div class="bar-track"><div class="bar-fill" style="width:${(n/total*100).toFixed(0)}%"></div></div><div class="bar-num">${n}/${total}</div></div>`;}).join('')}
+    </div></div>`:''}
+  `;
+  // Draw charts after innerHTML is fully painted
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      drawChart(all);
+      drawMoodCycleChart(moods);
+      drawMoodHeatmap(moods);
+    });
+  });
+}
+
+function toggleMetric(key,btn){
+  const idx=activeMetrics.indexOf(key);
+  if(idx>-1){if(activeMetrics.length===1)return;activeMetrics.splice(idx,1);btn.classList.remove('active');}
+  else{activeMetrics.push(key);btn.classList.add('active');}
+  getAllSessions().then(all=>{
+    const sorted=all.sort((a,b)=>new Date(a.date)-new Date(b.date));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>drawChart(sorted)));
+  });
+}
+
+function drawChart(sessions){
+  const wrap=document.getElementById('chart-svg-wrap');
+  const legend=document.getElementById('chart-legend');
+  if(!wrap)return;
+  if(sessions.length<2){wrap.innerHTML=`<p style="font-size:0.76rem;color:var(--muted);text-align:center;padding:14px 0">Add at least 2 sessions to see trends</p>`;if(legend)legend.innerHTML='';return;}
+  const W=320,H=170,PL=30,PR=12,PT=10,PB=28;
+  const cW=W-PL-PR,cH=H-PT-PB,n=sessions.length;
+  const xPos=i=>PL+(n===1?cW/2:(i/(n-1))*cW);
+  const show=CHART_METRICS.filter(m=>activeMetrics.includes(m.key));
+  const primMax=show.some(m=>m.max===5)?5:Math.max(...sessions.flatMap(s=>show.map(m=>+(s[m.key]||0))),1);
+  const durMax=Math.max(...sessions.map(s=>s.duration||0),1);
+  function yPos(val,metric){const mx=metric.max===null?durMax:primMax;return PT+cH-((+val||0)/mx)*cH;}
+  const ticks=primMax===5?[0,1,2,3,4,5]:[0,Math.round(primMax/4),Math.round(primMax/2),Math.round(3*primMax/4),primMax];
+  const grid=ticks.map(t=>{const y=(PT+cH-(t/primMax)*cH).toFixed(1);return`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="#ead8d0" stroke-width="1"/><text x="${PL-3}" y="${(+y+3).toFixed(1)}" text-anchor="end" font-size="9" fill="#b09090">${t}</text>`;}).join('');
+  const step=Math.max(1,Math.ceil(n/6));
+  const xLabels=sessions.map((s,i)=>{if(i%step!==0&&i!==n-1)return'';const d=new Date(s.date);return`<text x="${xPos(i).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="9" fill="#b09090">${d.getMonth()+1}/${d.getDate()}</text>`;}).join('');
+
+  let phaseBands='';
+  if(n>=2){let lp=sessions[0].phase,si=0;sessions.forEach((s,i)=>{if(s.phase!==lp||i===n-1){const ei=i===n-1?i:i-1;phaseBands+=`<rect x="${xPos(si).toFixed(1)}" y="${PT}" width="${Math.max(0,xPos(ei)-xPos(si)).toFixed(1)}" height="${cH}" fill="${PHASE_COLORS[lp]||'transparent'}" opacity="0.08"/>`;lp=s.phase;si=i;}});}
+
+  let paths='',dots='';
+  show.forEach((metric,mi)=>{
+    const vals=sessions.map(s=>+(s[metric.key]||0));
+    const pathD=vals.map((v,i)=>`${i===0?'M':'L'}${xPos(i).toFixed(1)},${yPos(v,metric).toFixed(1)}`).join(' ');
+    if(mi===0){const aD=pathD+` L${xPos(n-1).toFixed(1)},${(PT+cH).toFixed(1)} L${PL},${(PT+cH).toFixed(1)} Z`;paths+=`<path d="${aD}" fill="${metric.color}" opacity="0.1"/>`;}
+    paths+=`<path d="${pathD}" fill="none" stroke="${metric.color}" stroke-width="${mi===0?2.5:2}" stroke-linecap="round" stroke-linejoin="round"${mi>0?' stroke-dasharray="4 2"':''}/>`;
+    vals.forEach((v,i)=>{dots+=`<circle cx="${xPos(i).toFixed(1)}" cy="${yPos(v,metric).toFixed(1)}" r="3.5" fill="${metric.color}" stroke="white" stroke-width="1.5"/>`;});
+  });
+
+  wrap.innerHTML=`<svg viewBox="0 0 ${W} ${H}" class="linechart">${phaseBands}${grid}${paths}${dots}${xLabels}</svg>`;
+  if(legend)legend.innerHTML=show.map(m=>`<div class="legend-item"><div class="legend-dot" style="background:${m.color}"></div>${m.label}</div>`).join('');
+}
+
+// ── SERVER SYNC ───────────────────────────────────────────────────────
+// Posts full IndexedDB state to the local server after every save.
+// Silent — no UI changes on success. Small toast only on repeated failure.
+let syncFailCount = 0;
+const SERVER_URL = `${window.location.protocol}//${window.location.hostname}:3000`;
+
+async function syncToServer() {
+  try {
+    const sessions = await getAllSessions();
+    const moods    = await getAllMoods();
+    const intimacy = await getAllIntimacy();
+    const res = await fetch(`${SERVER_URL}/api/sync`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ sessions, moods, intimacy }),
+    });
+    if (res.ok) {
+      syncFailCount = 0; // reset on success
+    } else {
+      throw new Error(`Server responded ${res.status}`);
+    }
+  } catch (e) {
+    syncFailCount++;
+    // Only notify after 3 consecutive failures so transient hiccups are silent
+    if (syncFailCount >= 3) {
+      showToast('Server sync unavailable — data safe in browser');
+      syncFailCount = 0; // reset so it doesn't spam
+    }
+    console.warn('Sync skipped:', e.message);
+  }
+}
+
+// ── DATA ─────────────────────────────────────────────────────────────
+async function exportData(){
+  const sessions=await getAllSessions();
+  const moods=await getAllMoods();
+  const blob=new Blob([JSON.stringify({sessions,moods},null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`sessions-export-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();showToast('Exported ✓');
+}
+async function clearData(){
+  if(!confirm('Delete ALL sessions and mood entries? This cannot be undone.'))return;
+  const sessions=await getAllSessions();
+  const moods=await getAllMoods();
+  const intimacyAll=await getAllIntimacy();
+  for(const s of sessions)await deleteSession(s.id);
+  for(const m of moods)await deleteMood(m.id);
+  for(const i of intimacyAll)await deleteIntimacy(i.id);
+  showToast('All data cleared');
+  renderHistory();renderTrends();updatePumpBanners();
+}
+
+
+
+// ── ACTIVITY ACCORDION SYSTEM ─────────────────────────────────────────
+// selectedActivities: { activityName: { field: value, ... } }
+let selectedActivities = {};
+
+// Sub-question definitions for each activity
+// Each returns an HTML string rendered into the accordion detail div
+function getActivitySubHTML(activity, id) {
+  const sl = (slId, label, min, max, def, lo, hi) =>
+    `<span class="act-label">${label} <span id="${id}_${slId}_v" style="color:var(--rose)">${def}</span></span>
+     <div class="act-slider-row">
+       <span class="act-end">${lo}</span>
+       <input type="range" min="${min}" max="${max}" value="${def}"
+         oninput="document.getElementById('${id}_${slId}_v').textContent=this.value;actStore('${id}','${slId}',this.value)">
+       <span class="act-end">${hi}</span>
+     </div>`;
+
+  const pills = (slId, label, options, multi) =>
+    `<span class="act-label">${label}</span>
+     <div class="act-pills" id="${id}_${slId}_grp">
+       ${options.map(o=>`<button class="act-pill" onclick="actPill(this,'${id}','${slId}',${multi})">${o}</button>`).join('')}
+     </div>`;
+
+  const yn = (slId, label, revealId) =>
+    `<span class="act-label">${label}</span>
+     <div class="act-pills">
+       <button class="act-pill" onclick="actYN(this,'${id}','${slId}','yes','${revealId}')">Yes</button>
+       <button class="act-pill" onclick="actYN(this,'${id}','${slId}','no','${revealId}')">No</button>
+     </div>
+     <div id="${revealId}" style="display:none;margin-top:6px">`;
+
+  const endyn = () => `</div>`;
+
+  const txt = (slId, label, ph) =>
+    `<span class="act-label">${label}</span>
+     <textarea rows="2" style="width:100%;padding:8px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--cream);font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--text);outline:none;resize:none;margin-bottom:4px" placeholder="${ph}" oninput="actStore('${id}','${slId}',this.value)"></textarea>`;
+
+switch(activity) {
+
+```
+case 'Cunnilingus':
+  return sl('duration','Duration (min)',1,60,5,'1','60+')
+    + sl('arousal','Her arousal during',1,5,3,'Low','High')
+    + pills('mucus_color','Mucus colour',['Clear','White','Cream','Yellow-tinged','Pink-tinged'],true)
+    + pills('mucus_consistency','Consistency',['Watery','Thin','Normal','Thick','Sticky','Stretchy'],true)
+    + pills('mucus_flow','Flow amount',['Light','Normal','Heavy'],false)
+    + pills('mucus_taste','Taste profile',['Neutral','Mild','Tangy / acidic','Sweet','Metallic','Strong'],true)
+    + pills('mucus_ph','pH feel',['Acidic','Slightly acidic','Neutral','Alkaline'],false)
+    + pills('discharge_type','Discharge type present',['None','Clear / ovulatory','White / creamy','Cottage cheese-like','Menstrual'],true)
+    + pills('technique','Technique used',['Flat tongue','Tip of tongue','Suction','Licking','Circling','Spelling','Full coverage','With fingers'],true)
+    + yn('she_finished','Did she finish this way?',id+'_cun_finish')
+      + sl('finish_intensity','Orgasm intensity',1,5,3,'Mild','Intense')
+    + endyn()
+    + txt('notes','Notes','Anything notable about taste, response, duration\u2026');
+
+case 'Blowjob / Fellatio':
+  return sl('duration','Duration (min)',1,90,5,'1','90+')
+    + pills('foreskin','Foreskin retracted?',['Yes \u2014 by her','Yes \u2014 self','Partial','N/A'],false)
+    + pills('tongue_technique','Tongue technique',['Tip','Shaft','Frenulum','Base','Glans circle','Full length lick','Underside'],true)
+    + pills('depth','Depth',['Tip only','Halfway','Most','Full \u2014 deepthroat'],false)
+    + pills('hands','Hands involved',['None','One hand shaft','Two hands','Base grip','Ball massage'],true)
+    + sl('suction','Suction level',1,5,3,'Gentle','Strong')
+    + sl('arousal_me','My arousal during',1,5,3,'Low','High')
+    + yn('precum','Precum present?',id+'_pc')
+      + pills('precum_amount','Precum amount',['Trace','Drops','Moderate','Heavy'],false)
+    + endyn()
+    + sl('duration_to_finish','Time to finish (min)',1,60,10,'1','60+')
+    + yn('she_finished_me','Did I finish this way?',id+'_bj_finish')
+      + pills('finish_action','She\u2019s action at finish',['Swallowed','Held','Spit','Pulled off','On face','On chest'],false)
+      + sl('refractory','Refractory time (min)',1,60,15,'1','60+')
+    + endyn()
+    + txt('notes','Notes','Anything notable\u2026');
+
+case 'Breast pump':
+  return pills('mode','Mode used',['Suction only','Massage only','Combined','App-controlled','Escalating','Pulse','Wave'],false)
+    + sl('suction_level','Suction level',1,10,5,'1','10')
+    + sl('massage_level','Massage level',1,10,5,'1','10')
+    + sl('duration','Duration (min)',1,60,10,'1','60+')
+    + pills('partner_nursing','Partner nursing during?',['Yes','No'],false)
+    + sl('arousal','Her arousal during',1,5,3,'Low','High')
+    + yn('lactation','Lactation observed?',id+'_lact')
+      + pills('lact_volume','Volume',['Trace','Drops','Small amount','Moderate'],false)
+      + pills('lact_color','Colour',['Clear','Slightly cloudy','White','Yellowish','Colostrum-like'],false)
+      + pills('lact_consistency','Consistency',['Watery','Thin','Normal','Thick'],false)
+      + pills('lact_taste','Taste',['Sweet','Neutral','Slightly salty','Mild','Strong'],false)
+    + endyn()
+    + sl('nipple_sensitivity','Nipple sensitivity after',0,5,0,'None','Intense')
+    + sl('breast_fullness','Breast fullness after',0,5,0,'None','Notable')
+    + txt('notes','Notes','Response, changes observed\u2026');
+
+case 'Penetrative':
+  return sl('arousal_her','Her arousal during',1,5,3,'Low','High')
+    + sl('depth','Depth',1,5,3,'Shallow','Deep')
+    + sl('pace','Pace',1,5,3,'Slow','Fast')
+    + pills('lubrication_color','Her lubrication colour',['Clear','White','Cream','Light yellow','Pink-tinged'],true)
+    + pills('lubrication_consistency','Lubrication consistency',['Watery','Thin','Normal','Thick','Very wet'],false)
+    + pills('lubrication_amount','Lubrication amount',['Light','Normal','Heavy','Very heavy'],false)
+    + sl('duration','Duration (min)',1,120,10,'1','120+')
+    + pills('finish','Finish during?',['Yes \u2014 her','Yes \u2014 me','Both','Neither'],false)
+    + txt('notes','Notes','Position feel, depth comfort, her feedback\u2026');
+
+case 'Anal \u2014 penetrative':
+  return sl('arousal_her','Her arousal during',1,5,3,'Low','High')
+    + pills('lubrication','Lubrication used',['None','Natural','Silicone lube','Water-based lube','Hybrid lube'],false)
+    + sl('depth','Depth',1,5,2,'Shallow','Full')
+    + sl('pace','Pace',1,5,2,'Slow','Fast')
+    + sl('her_comfort','Her comfort level',1,5,3,'Uncomfortable','Very comfortable')
+    + pills('prep','Preparation',['None','Enema','Douche','Anal training','Warm up'],true)
+    + pills('finish','Finish during?',['Yes \u2014 her','Yes \u2014 me','Both','Neither'],false)
+    + txt('notes','Notes','Her response, comfort feedback\u2026');
+
+case 'Anal \u2014 finger / toy':
+  return pills('type','Type',['Finger','Butt plug','Dildo','Vibrator','Anal beads','Prostate massager'],true)
+    + sl('her_comfort','Her comfort',1,5,3,'Low','High')
+    + sl('her_arousal','Her arousal during',1,5,3,'Low','High')
+    + pills('lubrication','Lubrication',['None','Natural','Silicone lube','Water-based'],false)
+    + pills('depth','Depth',['Shallow','Mid','Deep'],false)
+    + txt('notes','Notes','Her response, what worked\u2026');
+
+case 'Manual \u2014 her':
+  return sl('arousal','Her arousal during',1,5,3,'Low','High')
+    + pills('technique','Technique',['External only','Internal only','Both','G-spot focus','A-spot','Circular','In-out','Tapping','Rubbing'],true)
+    + pills('fingers','Fingers used',['One','Two','Three','Thumb'],true)
+    + pills('pressure','Pressure',['Light','Medium','Firm','Variable'],false)
+    + pills('lubrication_amount','Her natural lubrication',['Light','Normal','Heavy','Very wet'],false)
+    + yn('she_finished','Did she finish this way?',id+'_mh_fin')
+      + sl('intensity','Orgasm intensity',1,5,3,'Mild','Intense')
+    + endyn()
+    + txt('notes','Notes','What worked, her feedback\u2026');
+
+case 'Manual \u2014 him':
+  return sl('arousal_me','My arousal during',1,5,3,'Low','High')
+    + pills('grip','Grip style',['Standard','Reverse','Two-handed','Twist','Loose','Firm'],false)
+    + pills('pace','Pace',['Slow','Medium','Fast','Edging','Variable'],false)
+    + pills('technique','Additional technique',['Tip focus','Base squeeze','Ball included','Frenulum focus','Lube used'],true)
+    + yn('i_finished','Did I finish this way?',id+'_him_fin')
+      + sl('refractory','Refractory time (min)',1,60,15,'1','60+')
+    + endyn()
+    + txt('notes','Notes','Anything notable\u2026');
+
+case 'Rimming \u2014 her':
+  return sl('duration','Duration (min)',1,30,3,'1','30+')
+    + sl('her_arousal','Her arousal during',1,5,3,'Low','High')
+    + pills('technique',['Flat tongue','Tip','Circling','Suction','Penetrating','Combo'],true,'Technique')
+    + pills('taste','Taste profile',['Neutral','Mild','Musky','Strong','Soapy / clean'],false)
+    + txt('notes','Notes','Her response, anything notable\u2026');
+
+case 'Rimming \u2014 him':
+  return sl('duration','Duration (min)',1,30,3,'1','30+')
+    + sl('my_arousal','My arousal during',1,5,3,'Low','High')
+    + pills('technique','Technique',['Flat tongue','Tip','Circling','Suction','Penetrating'],true)
+    + txt('notes','Notes','Response, anything notable\u2026');
+
+case '69':
+  return pills('style','Style',['Simultaneous','Alternating \u2014 her first','Alternating \u2014 me first'],false)
+    + pills('position','Orientation',['Standard','Side-lying','Her on top','Me on top'],false)
+    + pills('finish','Who finished?',['Her','Me','Both','Neither'],false)
+    + txt('notes','Notes','What worked\u2026');
+
+case 'Pegging':
+  return pills('toy_size','Toy size',['Small','Medium','Large','Extra large'],false)
+    + sl('his_comfort','My comfort level',1,5,3,'Low','High')
+    + sl('her_arousal','Her arousal during',1,5,3,'Low','High')
+    + pills('lubrication','Lubrication',['Water-based','Silicone','Hybrid','None'],false)
+    + pills('finish','Finish during?',['Yes \u2014 me','Yes \u2014 her','Both','Neither'],false)
+    + sl('duration','Duration (min)',1,60,10,'1','60+')
+    + txt('notes','Notes','Comfort, her response, what worked\u2026');
+
+case 'Fisting':
+  return pills('type','Type',['Vaginal','Anal'],false)
+    + pills('depth','Depth achieved',['Partial \u2014 knuckles','Past knuckles','Wrist deep','Full'],false)
+    + sl('her_comfort','Her comfort',1,5,3,'Low','High')
+    + sl('her_arousal','Her arousal',1,5,3,'Low','High')
+    + pills('lubrication','Lubrication',['Water-based','Silicone','Hybrid','Generous','Light'],true)
+    + pills('fingers','Progression',['Four fingers','Tuck','Partial','Full fist'],false)
+    + txt('notes','Notes','Her response, feedback, depth comfort\u2026');
+
+case 'Squirting play':
+  return pills('type','Was it',['Intentional','Spontaneous','Unexpected'],false)
+    + sl('volume','Volume',1,5,2,'Drops','Significant')
+    + pills('trigger','Trigger',['G-spot stimulation','Penetration','Clitoral','Combined','Unknown'],true)
+    + pills('timing','Timing',['During orgasm','Before orgasm','After orgasm','Separate event'],false)
+    + txt('notes','Notes','Circumstances, her response\u2026');
+
+case 'Toys \u2014 on her':
+  return pills('toy_type','Toy type',['Vibrator','Wand','Bullet','Dildo','G-spot toy','Suction toy','Rabbit','Couples toy','Anal toy'],true)
+    + sl('arousal','Her arousal',1,5,3,'Low','High')
+    + pills('placement','Placement',['Clitoral','Vaginal \u2014 external','Vaginal \u2014 internal','Anal','Combined'],true)
+    + sl('intensity_setting','Intensity setting',1,10,5,'1','10')
+    + yn('she_finished','Did she finish?',id+'_toy_fin')
+      + sl('orgasm_intensity','Intensity',1,5,3,'Mild','Intense')
+    + endyn()
+    + txt('notes','Notes','Her response, settings that worked\u2026');
+
+case 'Toys \u2014 on him':
+  return pills('toy_type','Toy type',['Cock ring','Prostate massager','Stroker','Vibrating sleeve','Anal toy','Edging device'],true)
+    + sl('my_arousal','My arousal',1,5,3,'Low','High')
+    + sl('intensity_setting','Intensity / tightness',1,5,3,'Low','High')
+    + yn('i_finished','Did I finish?',id+'_toym_fin')
+      + sl('refractory','Refractory time (min)',1,60,15,'1','60+')
+    + endyn()
+    + txt('notes','Notes','What worked, sensation notes\u2026');
+
+case 'Strap-on':
+  return pills('size','Size',['Small','Medium','Large','Extra large'],false)
+    + pills('style','Strap-on style',['Harness \u2014 standard','Strapless','Double-ended','Vibrating'],false)
+    + sl('his_comfort','Recipient comfort',1,5,3,'Low','High')
+    + sl('her_arousal','Giver arousal',1,5,3,'Low','High')
+    + pills('position_type','Position',['Doggy','Missionary','Cowgirl','Standing','Spooning'],true)
+    + pills('finish','Finish during?',['Yes \u2014 recipient','Yes \u2014 giver','Both','Neither'],false)
+    + txt('notes','Notes','Comfort feedback, what worked\u2026');
+
+default:
+  return `<span class="act-label">Notes</span>
+    <textarea rows="2" style="width:100%;padding:8px 10px;border-radius:10px;border:1.5px solid var(--border);background:var(--cream);font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--text);outline:none;resize:none" placeholder="Notes about this activity\u2026" oninput="actStore('${id}','notes',this.value)"></textarea>`;
+```
+
+}
+}
+
+// Store activity sub-question data
+function actStore(id, field, value){
+if(!selectedActivities[id])selectedActivities[id]={};
+selectedActivities[id][field]=value;
+}
+
+function actPill(el, id, field, multi){
+if(!multi) el.closest(’.act-pills’).querySelectorAll(’.act-pill’).forEach(p=>p.classList.remove(‘selected’));
+el.classList.toggle(‘selected’);
+const vals=Array.from(el.closest(’.act-pills’).querySelectorAll(’.act-pill.selected’)).map(p=>p.textContent.trim());
+actStore(id, field, vals.join(’, ’));
+}
+
+function actYN(el, id, field, val, revealId){
+el.closest(’.act-pills’).querySelectorAll(’.act-pill’).forEach(p=>p.classList.remove(‘selected’));
+el.classList.add(‘selected’);
+actStore(id, field, val);
+const reveal=document.getElementById(revealId);
+if(reveal)reveal.style.display=(val===‘yes’?‘block’:‘none’);
+}
+
+// Main toggle for activity pills
+function toggleActivity(activity, el){
+const safeId = ‘act_’+activity.replace(/[^a-z0-9]/gi,’*’);
+const detailEl = document.getElementById(‘act-detail-’+activity.replace(/[^a-z]/gi,’*’));
+const isActive = el.classList.toggle(‘active’);
+
+if(isActive){
+selectedActivities[safeId]={activity};
+if(detailEl){
+detailEl.innerHTML = getActivitySubHTML(activity, safeId);
+detailEl.style.display=‘block’;
+}
+} else {
+delete selectedActivities[safeId];
+if(detailEl){
+detailEl.innerHTML=’’;
+detailEl.style.display=‘none’;
+}
+}
+}
+
+// ── MEDIA HANDLING ───────────────────────────────────────────────────
+let intimacyMediaFiles = [];   // [{url, type, name}] — server paths after upload
+let mediaStream = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let recTimerInterval = null;
+let recSeconds = 0;
+let activeCapture = null;
+let photoStream = null;        // separate stream for viewfinder
+
+// ── Upload base64 to server ───────────────────────────────────────────
+async function uploadMediaToServer(dataUrl, mimeType, suggestedName){
+const typeMap = {‘image’:‘photo’,‘video’:‘video’,‘audio’:‘audio’};
+const mediaType = typeMap[mimeType.split(’/’)[0]] || ‘photo’;
+try{
+const res = await fetch(`${SERVER_URL}/api/media/upload`,{
+method:‘POST’,
+headers:{‘Content-Type’:‘application/json’},
+body:JSON.stringify({type:mediaType, name:suggestedName, data:dataUrl, mimeType})
+});
+const json = await res.json();
+if(json.ok) return json;
+} catch(e){ console.warn(‘Media upload failed:’,e.message); }
+// Fallback: store dataUrl locally if server unreachable
+return {ok:false, url:dataUrl, fileName:suggestedName, type:mediaType};
+}
+
+// ── Add media item to the in-form grid ────────────────────────────────
+async function addMediaToGrid(dataUrl, mimeType, suggestedName){
+const result = await uploadMediaToServer(dataUrl, mimeType, suggestedName);
+const src    = result.ok ? result.url : dataUrl;
+const name   = result.fileName || suggestedName;
+const mediaType = result.type || ‘photo’;
+
+intimacyMediaFiles.push({url:src, type:mediaType, name, mimeType});
+const grid = document.getElementById(‘il-media-grid’);
+if(!grid) return;
+const wrap = document.createElement(‘div’);
+wrap.className = ‘media-thumb-wrap’;
+const idx = intimacyMediaFiles.length - 1;
+if(mimeType.startsWith(‘video’)){
+wrap.innerHTML = ‘<video class="media-thumb" src="'+src+'" controls style="width:100%;border-radius:10px"></video>’
++ ‘<button class="media-del" onclick="removeMedia('+idx+',this.parentNode)">✕</button>’;
+} else if(mimeType.startsWith(‘audio’)){
+wrap.innerHTML = ‘<audio src="'+src+'" controls style="width:100%;margin-top:4px"></audio>’
++ ‘<div style="font-size:0.68rem;color:var(--muted);margin-top:2px">🎤 ‘+name+’</div>’
++ ‘<button class="media-del" onclick="removeMedia('+idx+',this.parentNode)">✕</button>’;
+} else {
+wrap.innerHTML = ‘<img class="media-thumb" src="'+src+'" style="border-radius:10px;width:100%">’
++ ‘<button class="media-del" onclick="removeMedia('+idx+',this.parentNode)">✕</button>’;
+}
+grid.appendChild(wrap);
+}
+
+// ── Upload from file library ──────────────────────────────────────────
+function handleMediaUpload(input){
+Array.from(input.files).forEach(file=>{
+const reader = new FileReader();
+reader.onload = e => addMediaToGrid(e.target.result, file.type, file.name);
+reader.readAsDataURL(file);
+});
+input.value = ‘’;
+}
+
+// ── Photo: getUserMedia + canvas — immediate, no flash, no native UI ──
+async function capturePhoto(){
+try{
+photoStream = await navigator.mediaDevices.getUserMedia({
+video:{facingMode:‘environment’, width:{ideal:1920}, height:{ideal:1080}},
+audio:false
+});
+// Show a brief viewfinder then snap
+const preview = document.getElementById(‘cap-preview’);
+preview.srcObject = photoStream;
+preview.style.display = ‘block’;
+preview.muted = true;
+// Wait for video to be ready then snap after 600ms (viewfinder settle)
+await new Promise(r=>{ preview.onloadedmetadata=()=>setTimeout(r,600); });
+const canvas = document.createElement(‘canvas’);
+canvas.width  = preview.videoWidth  || 1920;
+canvas.height = preview.videoHeight || 1080;
+canvas.getContext(‘2d’).drawImage(preview,0,0);
+const dataUrl = canvas.toDataURL(‘image/jpeg’,0.92);
+photoStream.getTracks().forEach(t=>t.stop());
+photoStream = null;
+preview.srcObject = null;
+preview.style.display = ‘none’;
+const name = ‘photo-’+new Date().toISOString().replace(/[:.]/g,’-’)+’.jpg’;
+await addMediaToGrid(dataUrl,‘image/jpeg’,name);
+showToast(‘Photo captured ✓’);
+} catch(err){
+showToast(‘Camera not available’);
+console.error(err);
+// Fall back to file input
+document.getElementById(‘il-photo-input’).click();
+}
+}
+
+// ── Recording helpers ─────────────────────────────────────────────────
+function startRecTimer(labelId){
+recSeconds = 0;
+recTimerInterval = setInterval(()=>{
+recSeconds++;
+const m = String(Math.floor(recSeconds/60)).padStart(2,‘0’);
+const s = String(recSeconds%60).padStart(2,‘0’);
+const el = document.getElementById(labelId);
+if(el) el.innerHTML = ‘<span class="rec-timer">● ‘+m+’:’+s+’</span>’;
+}, 1000);
+}
+
+function stopRecTimer(labelId, defaultText){
+clearInterval(recTimerInterval);
+recTimerInterval = null;
+recSeconds = 0;
+const el = document.getElementById(labelId);
+if(el) el.textContent = defaultText;
+}
+
+async function stopStream(){
+if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
+const preview = document.getElementById(‘cap-preview’);
+if(preview){ preview.srcObject=null; preview.style.display=‘none’; }
+}
+
+// ── Video recording ───────────────────────────────────────────────────
+async function toggleVideoCapture(){
+if(activeCapture===‘video’){
+// Stop recording
+if(mediaRecorder && mediaRecorder.state!==‘inactive’) mediaRecorder.stop();
+return;
+}
+if(activeCapture===‘audio’) await stopAudioCapture();
+
+try {
+mediaStream = await navigator.mediaDevices.getUserMedia({video:true, audio:true});
+const preview = document.getElementById(‘cap-preview’);
+preview.srcObject = mediaStream;
+preview.style.display = ‘block’;
+preview.muted = true;
+
+```
+recordedChunks = [];
+const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9'
+               : MediaRecorder.isTypeSupported('video/webm') ? 'video/webm'
+               : 'video/mp4';
+mediaRecorder = new MediaRecorder(mediaStream, {mimeType});
+mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) recordedChunks.push(e.data); };
+mediaRecorder.onstop = ()=>{
+  const blob = new Blob(recordedChunks, {type:mimeType});
+  const reader = new FileReader();
+  reader.onload = e => addMediaToGrid(e.target.result, mimeType, 'video-'+Date.now());
+  reader.readAsDataURL(blob);
+  stopStream();
+  stopRecTimer('cap-video-label','Video');
+  document.getElementById('cap-video-btn').classList.remove('recording');
+  document.getElementById('cap-video-icon').textContent = '🎥';
+  activeCapture = null;
+};
+mediaRecorder.start(100);
+activeCapture = 'video';
+document.getElementById('cap-video-btn').classList.add('recording');
+document.getElementById('cap-video-icon').textContent = '⏹️';
+startRecTimer('cap-video-label');
+```
+
+} catch(err){
+showToast(‘Camera access denied or unavailable’);
+console.error(err);
+}
+}
+
+// ── Audio recording ───────────────────────────────────────────────────
+async function toggleAudioCapture(){
+if(activeCapture===‘audio’){
+await stopAudioCapture();
+return;
+}
+if(activeCapture===‘video’) await stopStream();
+
+try {
+mediaStream = await navigator.mediaDevices.getUserMedia({audio:true});
+recordedChunks = [];
+const mimeType = MediaRecorder.isTypeSupported(‘audio/webm;codecs=opus’) ? ‘audio/webm;codecs=opus’
+: MediaRecorder.isTypeSupported(‘audio/webm’) ? ‘audio/webm’
+: ‘audio/mp4’;
+mediaRecorder = new MediaRecorder(mediaStream, {mimeType});
+mediaRecorder.ondataavailable = e=>{ if(e.data.size>0) recordedChunks.push(e.data); };
+mediaRecorder.onstop = ()=>{
+const blob = new Blob(recordedChunks, {type:mimeType});
+const reader = new FileReader();
+reader.onload = e => addMediaToGrid(e.target.result, mimeType, ‘audio-’+Date.now());
+reader.readAsDataURL(blob);
+stopStream();
+stopRecTimer(‘cap-audio-label’,‘Audio’);
+document.getElementById(‘cap-audio-btn’).classList.remove(‘recording’);
+document.getElementById(‘cap-audio-icon’).textContent = ‘🎤’;
+activeCapture = null;
+};
+mediaRecorder.start(100);
+activeCapture = ‘audio’;
+document.getElementById(‘cap-audio-btn’).classList.add(‘recording’);
+document.getElementById(‘cap-audio-icon’).textContent = ‘⏹️’;
+startRecTimer(‘cap-audio-label’);
+} catch(err){
+showToast(‘Microphone access denied or unavailable’);
+console.error(err);
+}
+}
+
+async function stopAudioCapture(){
+if(mediaRecorder && mediaRecorder.state!==‘inactive’) mediaRecorder.stop();
+}
+
+function removeMedia(idx, el){
+intimacyMediaFiles[idx] = null;
+el.remove();
+}
+
+// ── CUSTOM OPTIONS STORE ─────────────────────────────────────────────
+const DEFAULT_POSITIONS = [
+‘Missionary’,‘Cowgirl’,‘Reverse cowgirl’,‘Doggy style’,‘Spooning’,
+‘Prone bone’,‘Lotus’,‘Standing’,‘Against the wall’,‘Bent over’,
+‘Edge of bed’,‘Pile driver’,‘Legs up’,‘Wheelbarrow’,‘Seated lap’,
+‘Reverse seated’,‘Butterfly’,‘Froggy’,‘Face down’,‘Sideways scissors’,
+‘Oral — giving’,‘Oral — receiving’,‘69’,‘Manual — her’,‘Manual — him’,
+‘Anal — doggy’,‘Anal — missionary’,‘Anal — cowgirl’,‘Pegging’,
+// Menstruation-friendly
+‘Spooning — menstrual’,‘Missionary — hips elevated’,‘Seated — straddle’,
+‘Side-lying scissor’,‘Cowgirl — slow’,‘Edge of tub’,‘Shower standing’,
+‘Bathtub reclined’,‘Oral only — menstrual’,‘Manual only — menstrual’,
+];
+const DEFAULT_TOYS = [
+‘Vibrator’,‘Wand massager’,‘Bullet’,‘Rabbit’,‘Dildo’,‘Suction toy’,
+‘Anal plug’,‘Anal beads’,‘Prostate massager’,‘Strap-on’,‘Cock ring’,
+‘Nipple clamps’,‘Restraints / cuffs’,‘Blindfold’,‘Spreader bar’,
+‘Feather tickler’,‘Paddle’,‘Flogger’,‘Edging device’,‘Remote toy’,
+‘Breast pump (Eufy S2)’,‘Couples vibrator’,‘We-Vibe style’,‘G-spot toy’,
+];
+const DEPOSIT_LOCATIONS = [
+‘Vaginal — internal’,‘Anal — internal’,‘Oral — swallowed’,‘Oral — held’,
+‘Chest’,‘Stomach’,‘Back’,‘Breasts’,‘Face’,‘Neck’,‘Thighs’,‘Buttocks’,
+‘Pubic area’,‘Full body’,‘External — other’,
+];
+
+let customPositions = [];
+let customToys = [];
+
+async function loadCustomOptions(){
+const all = await getAllCustomOptions();
+customPositions = all.filter(o=>o.type===‘position’).map(o=>o.value);
+customToys      = all.filter(o=>o.type===‘toy’).map(o=>o.value);
+}
+async function addCustomPosition(val){
+if(!val||customPositions.includes(val))return;
+await addCustomOption({type:‘position’,value:val});
+customPositions.push(val);
+}
+async function addCustomToy(val){
+if(!val||customToys.includes(val))return;
+await addCustomOption({type:‘toy’,value:val});
+customToys.push(val);
+}
+
+// ── INTIMACY LOG ──────────────────────────────────────────────────────
+let selectedPositions = [];
+let selectedToys      = [];
+let selectedDeposit   = [];
+let intimacyYNState   = {herOrgasm:null,myOrgasm:null,protection:null};
+let intimacyStars     = 0;
+
+function setIntimacyStars(n){
+intimacyStars=n;
+document.querySelectorAll(’.istar’).forEach((s,i)=>s.classList.toggle(‘lit’,i<n));
+}
+function toggleMultiSelect(el,arr){
+el.classList.toggle(‘selected’);
+const val=el.textContent.trim();
+const idx=arr.indexOf(val);
+if(idx>-1)arr.splice(idx,1); else arr.push(val);
+}
+function toggleDepositPill(el){
+el.classList.toggle(‘selected’);
+const val=el.textContent.trim();
+const idx=selectedDeposit.indexOf(val);
+if(idx>-1)selectedDeposit.splice(idx,1); else selectedDeposit.push(val);
+}
+function toggleIntimacyYN(el,base){
+el.closest(’.pill-group’).querySelectorAll(’.pill’).forEach(p=>p.classList.remove(‘selected’));
+el.classList.add(‘selected’);
+const isYes=el.classList.contains(‘yes-pill’);
+intimacyYNState[base]=isYes?‘Yes’:‘No’;
+const fields=document.getElementById(base+’-yes-fields’);
+if(fields)fields.classList.toggle(‘visible’,isYes);
+}
+function getPillsById(id){
+return Array.from(document.querySelectorAll(’#’+id+’ .pill.selected’)).map(p=>p.textContent.trim());
+}
+
+// ── ACTIVITY META — icons and teaser descriptions ─────────────────────
+const ACTIVITY_META = {
+‘Cunnilingus’:             { icon:‘👅’, desc:‘Oral stimulation of her vulva and clitoris’ },
+‘Blowjob / Fellatio’:      { icon:‘💋’, desc:‘Oral stimulation of his penis’ },
+‘69’:                      { icon:‘☯️’, desc:‘Simultaneous mutual oral stimulation’ },
+‘Period oral’:             { icon:‘🩸’, desc:‘Cunnilingus during menstruation’ },
+‘Snowballing’:             { icon:‘❄️’, desc:‘Passing semen between mouths after oral’ },
+‘Penetrative’:             { icon:‘🔥’, desc:‘Vaginal intercourse — penis inside vagina’ },
+‘Anal — penetrative’:      { icon:‘🍑’, desc:‘Anal intercourse — penis inside anus’ },
+‘Pegging’:                 { icon:‘🎭’, desc:‘She penetrates him anally with a strap-on’ },
+‘Strap-on’:                { icon:‘🔧’, desc:‘Penetration using a harness-mounted dildo’ },
+‘Fisting’:                 { icon:‘✊’, desc:‘Inserting a full hand into vagina or anus’ },
+‘Manual — her’:            { icon:‘🖐️’, desc:‘Stimulating her genitals with hands / fingers’ },
+‘Manual — him’:            { icon:‘🤲’, desc:‘Stimulating his penis with her hands’ },
+‘Anal — finger / toy’:     { icon:‘💎’, desc:‘Anal stimulation using fingers or a toy’ },
+‘Fingering’:               { icon:‘☝️’, desc:‘Internal vaginal stimulation with fingers’ },
+‘Breast pump’:             { icon:‘🌸’, desc:‘Eufy S2 breast pump — suction and massage stimulation’ },
+‘Mammary intercourse (titty fuck)’: { icon:‘💞’, desc:‘Penis thrusting between pressed-together breasts’ },
+‘Nipple play only’:        { icon:‘✨’, desc:‘Dedicated breast and nipple stimulation without other activity’ },
+‘Rimming — her’:           { icon:‘🌀’, desc:‘Oral-anal stimulation of her anus’ },
+‘Rimming — him’:           { icon:‘🌀’, desc:‘Oral-anal stimulation of his anus’ },
+‘Toys — on her’:           { icon:‘🎀’, desc:‘Using a vibrator, dildo or other toy on her’ },
+‘Toys — on him’:           { icon:‘🎯’, desc:‘Using a cock ring, prostate toy or stroker on him’ },
+‘Couples toy’:             { icon:‘💑’, desc:‘A toy designed for simultaneous pleasure for both’ },
+‘Tribbing’:                { icon:‘🔄’, desc:‘Vulva-to-vulva or thigh grinding between partners’ },
+‘Frottage’:                { icon:‘🌊’, desc:‘Full-body genital rubbing without penetration’ },
+‘Outercourse’:             { icon:‘🌿’, desc:‘Intimate contact and stimulation without internal penetration’ },
+‘Body worship’:            { icon:‘🙏’, desc:‘Reverential kissing, licking and caressing of the entire body’ },
+‘Sensory play’:            { icon:‘👁️’, desc:‘Heightening senses through blindfolds, feathers, texture’ },
+‘Wax play’:                { icon:‘🕯️’, desc:‘Dripping body-safe candle wax onto skin for sensation’ },
+‘Temperature play’:        { icon:‘🧊’, desc:‘Using ice, warmth or contrasting temperatures on skin’ },
+‘Bondage’:                 { icon:‘🪢’, desc:‘Consensual restraint using rope, cuffs or ties’ },
+‘Spanking / impact play’:  { icon:‘🏓’, desc:‘Striking with hand or implement for sensation — paddles, floggers’ },
+‘Role play’:               { icon:‘🎭’, desc:‘Acting out scenarios or personas during intimacy’ },
+‘Edging / orgasm control’: { icon:‘⏱️’, desc:‘Bringing close to climax repeatedly without release’ },
+‘Mutual masturbation’:     { icon:‘🤝’, desc:‘Each partner stimulating themselves in each other's presence’ },
+‘Menstrual sex’:           { icon:‘🩸’, desc:‘Penetrative sex during her menstrual period’ },
+‘Shower sex’:              { icon:‘🚿’, desc:‘Any sexual activity taking place in the shower or bath’ },
+‘Squirting play’:          { icon:‘💦’, desc:‘Activities focused on or leading to female ejaculation’ },
+‘Simultaneous’:            { icon:‘⚡’, desc:‘Both partners receiving stimulation at the same time’ },
+‘Exhibitionism’:           { icon:‘👀’, desc:‘Arousal from being watched or observed by others’ },
+‘Voyeurism’:               { icon:‘🔭’, desc:‘Arousal from watching others — films, mirrors, live’ },
+‘Mirror play’:             { icon:‘🪞’, desc:‘Using mirrors to watch yourselves during intimacy’ },
+‘Outdoor’:                 { icon:‘🌳’, desc:‘Sexual activity in an outdoor or semi-public setting’ },
+‘Video / photo’:           { icon:‘📸’, desc:‘Capturing intimate moments on camera for private viewing’ },
+‘Dirty talk only’:         { icon:‘💬’, desc:‘Verbal erotic exchange without physical contact’ },
+};
+
+async function renderIntimacyView(){
+await loadCustomOptions();
+const allPositions=[…DEFAULT_POSITIONS,…customPositions];
+const allToys=[…DEFAULT_TOYS,…customToys];
+selectedPositions=[];selectedToys=[];selectedDeposit=[];selectedActivities={};intimacyMediaFiles=[];
+if(activeCapture){ if(mediaRecorder&&mediaRecorder.state!==‘inactive’)mediaRecorder.stop(); stopStream(); activeCapture=null; }
+selectedActivities={};
+Object.keys(intimacyYNState).forEach(k=>intimacyYNState[k]=null);
+intimacyStars=0;
+const entries=(await getAllIntimacy()).reverse();
+const cs=getCycleStatus();
+
+const moodsBefore=[‘Relaxed’,‘Playful’,‘Aroused’,‘Tender’,‘Confident’,‘Tired’,‘Stressed’,‘Curious’,‘Emotional’];
+const moodsAfterHer=[‘Relaxed’,‘Content’,‘Sleepy’,‘Playful’,‘Tender’,‘Energised’,‘Emotional’,‘Happy’,‘Satisfied’,‘Closer’,‘Loved’];
+const moodsAfterMe=[‘Relaxed’,‘Content’,‘Sleepy’,‘Energised’,‘Happy’,‘Satisfied’,‘Tender’,‘Proud’,‘Connected’,‘Playful’];
+
+// Full activity list with sub-question flags
+const ACTIVITIES = [
+// Oral
+‘Cunnilingus’,‘Blowjob / Fellatio’,‘69’,‘Period oral’,
+// Penetrative
+‘Penetrative’,‘Anal \u2014 penetrative’,‘Pegging’,‘Strap-on’,‘Fisting’,
+// Manual / tactile
+‘Manual \u2014 her’,‘Manual \u2014 him’,‘Anal \u2014 finger / toy’,‘Fingering’,
+// Breast / body
+‘Breast pump’,‘Mammary intercourse (titty fuck)’,‘Nipple play only’,
+// Rimming
+‘Rimming \u2014 her’,‘Rimming \u2014 him’,
+// Toys
+‘Toys \u2014 on her’,‘Toys \u2014 on him’,‘Couples toy’,
+// Body contact / sensation
+‘Frottage’,‘Outercourse’,‘Body worship’,‘Sensory play’,
+‘Wax play’,‘Temperature play’,‘Bondage’,‘Spanking / impact play’,
+‘Role play’,‘Edging / orgasm control’,‘Mutual masturbation’,
+// Context
+‘Menstrual sex’,‘Shower sex’,‘Squirting play’,‘Simultaneous’,
+‘Exhibitionism’,‘Voyeurism’,‘Mirror play’,‘Outdoor’,‘Dirty talk only’,
+];
+
+document.getElementById(‘intimacy-content’).innerHTML = ` ${cs?`<div class="cycle-banner ${cs.phaseClass}" style="margin-bottom:14px;padding:12px 16px"><div class="banner-row"><div><div class="banner-phase" style="font-size:1rem">${cs.phase}</div><div class="banner-day">Day ${cs.cycleDay} of 28</div></div><div class="banner-dot" style="background:${cs.color}"></div></div></div>`:’’}
+
+```
+<div class="form-section">
+  <div class="section-title">Context</div>
+  <div class="field"><label>Duration <span id="il-dur-lbl" style="color:var(--rose)">—</span></label>
+    <div class="inline-row"><input type="number" class="num-input" id="il-duration" min="1" max="300" placeholder="—" oninput="document.getElementById('il-dur-lbl').textContent=this.value?this.value+' min':'—'"><span>minutes</span></div></div>
+  <div class="field"><label>Initiated By</label>
+    <div class="pill-group" id="il-pg-initiation">
+      ${['Her','Me','Mutual'].map(m=>`<button class="pill" onclick="togglePill(this,true)">${m}</button>`).join('')}
+    </div></div>
+  <div class="field"><label>Session Arousal <span id="il-sl-ar" style="color:var(--rose)">3</span>/5</label>
+    <div class="slider-row"><span class="slider-end">Low</span><input type="range" min="1" max="5" value="3" id="il-arousal" oninput="document.getElementById('il-sl-ar').textContent=this.value"><span class="slider-end">High</span></div></div>
+  <div class="field"><label>Her Mood Before</label>
+    <div class="pill-group" id="il-pg-her-mood-before">
+      ${moodsBefore.map(m=>`<button class="pill" onclick="togglePill(this,true)">${m}</button>`).join('')}
+    </div></div>
+  <div class="field"><label>Protection Used?</label>
+    <div class="pill-group">
+      <button class="pill yes-pill" onclick="toggleIntimacyYN(this,'protection')">Yes</button>
+      <button class="pill no-pill" onclick="toggleIntimacyYN(this,'protection')">No</button>
+    </div></div>
+  <div class="field"><label>Cycle Phase Context</label>
+    <div class="pill-group" id="il-pg-cycle-context">
+      ${['Standard','Menstrual','Ovulatory window','Luteal / PMS','Placebo week'].map(p=>`<button class="pill" onclick="togglePill(this,true)">${p}</button>`).join('')}
+    </div></div>
+</div>
+
+<div class="form-section">
+  <div class="section-title">Activities</div>
+  <p style="font-size:0.76rem;color:var(--muted);margin-bottom:12px;font-style:italic">Tap an activity to select it and reveal detail questions</p>
+  <div id="il-activities-wrap">
+    ${ACTIVITIES.map(a=>{
+      const meta=ACTIVITY_META[a]||{icon:'✦',desc:'Tap to log details for this activity'};
+      const sid=a.replace(/[^a-z]/gi,'_');
+      return `<div class="activity-item" id="act-item-${sid}">
+        <button class="pill activity-pill" onclick="toggleActivity('${a.replace(/'/g,"\'")}',this)">
+          <span class="act-pill-top"><span class="act-icon">${meta.icon}</span>${a}</span>
+          <span class="act-teaser">${meta.desc}</span>
+        </button>
+        <div class="activity-detail" id="act-detail-${sid}" style="display:none"></div>
+      </div>`;
+    }).join('')}
+  </div>
+</div>
+
+<div class="form-section">
+  <div class="section-title">Positions</div>
+  <div class="pill-group" id="il-positions-group">
+    ${allPositions.map(p=>`<button class="pill" onclick="toggleMultiSelect(this,selectedPositions)">${p}</button>`).join('')}
+  </div>
+  <div class="field" style="margin-top:14px"><label>Add New Position</label>
+    <div class="inline-row">
+      <input type="text" id="il-new-position" placeholder="Enter position…" style="flex:1;padding:10px 13px;border-radius:12px;border:1.5px solid var(--border);background:var(--warm-white);font-family:'DM Sans',sans-serif;font-size:0.86rem;color:var(--text);outline:none">
+      <button onclick="addNewPosition()" style="padding:10px 16px;border-radius:12px;border:none;background:var(--rose);color:white;font-family:'DM Sans',sans-serif;font-size:0.8rem;cursor:pointer;white-space:nowrap;margin-left:8px">Add</button>
+    </div></div>
+</div>
+
+<div class="form-section">
+  <div class="section-title">Toys Used</div>
+  <div class="pill-group" id="il-toys-group">
+    ${allToys.map(t=>`<button class="pill" onclick="toggleMultiSelect(this,selectedToys)">${t}</button>`).join('')}
+  </div>
+  <div class="field" style="margin-top:14px"><label>Add New Toy</label>
+    <div class="inline-row">
+      <input type="text" id="il-new-toy" placeholder="Enter toy…" style="flex:1;padding:10px 13px;border-radius:12px;border:1.5px solid var(--border);background:var(--warm-white);font-family:'DM Sans',sans-serif;font-size:0.86rem;color:var(--text);outline:none">
+      <button onclick="addNewToy()" style="padding:10px 16px;border-radius:12px;border:none;background:var(--rose);color:white;font-family:'DM Sans',sans-serif;font-size:0.8rem;cursor:pointer;white-space:nowrap;margin-left:8px">Add</button>
+    </div></div>
+</div>
+
+<div class="form-section">
+  <div class="section-title">Her Orgasm</div>
+  <div class="field"><label>Did she orgasm?</label>
+    <div class="pill-group">
+      <button class="pill yes-pill" onclick="toggleIntimacyYN(this,'herOrgasm')">Yes</button>
+      <button class="pill no-pill" onclick="toggleIntimacyYN(this,'herOrgasm')">No</button>
+    </div></div>
+  <div class="conditional" id="herOrgasm-yes-fields">
+    <div class="field" style="margin-top:12px"><label>Count <span id="il-sl-hoc" style="color:var(--rose)">1</span></label>
+      <div class="slider-row"><span class="slider-end">1</span><input type="range" min="1" max="8" value="1" id="il-her-orgasm-count" oninput="document.getElementById('il-sl-hoc').textContent=this.value"><span class="slider-end">8+</span></div></div>
+    <div class="field"><label>Intensity <span id="il-sl-hoi" style="color:var(--rose)">3</span>/5</label>
+      <div class="slider-row"><span class="slider-end">Mild</span><input type="range" min="1" max="5" value="3" id="il-her-orgasm-intensity" oninput="document.getElementById('il-sl-hoi').textContent=this.value"><span class="slider-end">Intense</span></div></div>
+    <div class="field"><label>Type</label>
+      <div class="pill-group" id="il-pg-orgasm-type">
+        ${['Clitoral','Vaginal','Blended','Anal','Squirting','Nipple'].map(t=>`<button class="pill" onclick="togglePill(this,false)">${t}</button>`).join('')}
+      </div></div>
+  </div>
+</div>
+
+<div class="form-section">
+  <div class="section-title">My Finish</div>
+  <div class="field"><label>Did I finish?</label>
+    <div class="pill-group">
+      <button class="pill yes-pill" onclick="toggleIntimacyYN(this,'myOrgasm')">Yes</button>
+      <button class="pill no-pill" onclick="toggleIntimacyYN(this,'myOrgasm')">No</button>
+    </div></div>
+  <div class="conditional" id="myOrgasm-yes-fields">
+    <div class="field" style="margin-top:12px"><label>Potency <span id="il-sl-mp" style="color:var(--rose)">3</span>/5</label>
+      <div class="slider-row"><span class="slider-end">Low</span><input type="range" min="1" max="5" value="3" id="il-my-potency" oninput="document.getElementById('il-sl-mp').textContent=this.value"><span class="slider-end">High</span></div></div>
+    <div class="field"><label>Volume <span id="il-sl-mv" style="color:var(--rose)">3</span>/5</label>
+      <div class="slider-row"><span class="slider-end">Low</span><input type="range" min="1" max="5" value="3" id="il-my-volume" oninput="document.getElementById('il-sl-mv').textContent=this.value"><span class="slider-end">High</span></div></div>
+    <div class="field"><label>Deposit Location</label>
+      <div class="pill-group" id="il-deposit-group">
+        ${DEPOSIT_LOCATIONS.map(l=>`<button class="pill" onclick="toggleDepositPill(this)">${l}</button>`).join('')}
+      </div></div>
+  </div>
+</div>
+
+<div class="form-section">
+  <div class="section-title">After</div>
+  <div class="field"><label>Her Mood After</label>
+    <div class="pill-group" id="il-pg-her-mood-after">
+      ${moodsAfterHer.map(m=>`<button class="pill" onclick="togglePill(this,true)">${m}</button>`).join('')}
+    </div></div>
+  <div class="field"><label>My Mood After</label>
+    <div class="pill-group" id="il-pg-my-mood-after">
+      ${moodsAfterMe.map(m=>`<button class="pill" onclick="togglePill(this,true)">${m}</button>`).join('')}
+    </div></div>
+  <div class="field"><label>Overall Rating</label>
+    <div class="star-group" id="il-star-group">
+      ${[1,2,3,4,5].map(n=>`<span class="star istar" onclick="setIntimacyStars(${n})">♥</span>`).join('')}
+    </div></div>
+  <div class="field"><label>Notes</label>
+    <textarea id="il-notes" rows="3" placeholder="Anything worth remembering…"></textarea></div>
+</div>
+
+<!-- Media -->
+<div class="form-section">
+  <div class="section-title">Media</div>
+  <p style="font-size:0.76rem;color:var(--muted);margin-bottom:12px;font-style:italic">Stored locally only — never synced to server.</p>
+
+  <div class="field">
+    <label>Context</label>
+    <div class="pill-group" id="il-pg-media-context">
+      <button class="pill" onclick="togglePill(this,false)">Before</button>
+      <button class="pill" onclick="togglePill(this,false)">During</button>
+      <button class="pill" onclick="togglePill(this,false)">After</button>
+      <button class="pill" onclick="togglePill(this,false)">Mirror shot</button>
+      <button class="pill" onclick="togglePill(this,false)">Selfie</button>
+      <button class="pill" onclick="togglePill(this,false)">Partner</button>
+    </div>
+  </div>
+
+  <!-- Quick capture buttons -->
+  <div class="capture-btns">
+    <button class="capture-btn" id="cap-photo-btn" onclick="capturePhoto()">
+      <span class="cap-icon">📷</span>
+      <span>Photo</span>
+    </button>
+    <button class="capture-btn" id="cap-video-btn" onclick="toggleVideoCapture()">
+      <span class="cap-icon" id="cap-video-icon">🎥</span>
+      <span id="cap-video-label">Video</span>
+    </button>
+    <button class="capture-btn" id="cap-audio-btn" onclick="toggleAudioCapture()">
+      <span class="cap-icon" id="cap-audio-icon">🎤</span>
+      <span id="cap-audio-label">Audio</span>
+    </button>
+  </div>
+
+  <!-- Hidden camera for photo -->
+  <input type="file" id="il-photo-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleMediaUpload(this)">
+  <!-- Upload from library -->
+  <input type="file" id="il-media-input" accept="image/*,video/*" multiple style="display:none" onchange="handleMediaUpload(this)">
+
+  <!-- Live camera preview for video -->
+  <video id="cap-preview" style="display:none;width:100%;border-radius:12px;margin:8px 0;max-height:220px;object-fit:cover;background:#000" autoplay muted playsinline></video>
+
+  <!-- Recorded media grid -->
+  <div id="il-media-grid" class="media-grid"></div>
+
+  <!-- Upload from library button -->
+  <button class="upload-btn" onclick="document.getElementById('il-media-input').click()">
+    <span style="font-size:1.1rem">📎</span> Add from Library
+  </button>
+
+  <div class="field" style="margin-top:12px">
+    <label>Notes</label>
+    <textarea id="il-media-notes" rows="2" placeholder="Caption or context…"></textarea>
+  </div>
+</div>
+
+<button class="btn-primary" onclick="saveIntimacyEntry()">Save Entry</button>
+<div style="height:16px"></div>
+
+${entries.length?`
+<div style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;font-weight:500">Recent Entries</div>
+${entries.slice(0,10).map(e=>`
+  <div class="session-card" onclick="openIntimacyModal(${e.id})">
+    <div class="card-header">
+      <div><div class="card-date">${e.dateLabel} · ${e.timeLabel}</div>
+      <div class="card-meta">${e.phase||'—'}${e.duration?' · '+e.duration+' min':''}</div></div>
+      <div class="card-badge">${'♥'.repeat(e.rating||0)||'—'}</div>
+    </div>
+    <div class="card-chips">
+      ${e.activities?Object.keys(e.activities).slice(0,3).map(a=>`<span class="chip">${a}</span>`).join(''):''}
+      ${e.positions&&e.positions!=='—'?e.positions.split(', ').slice(0,2).map(p=>`<span class="chip">${p}</span>`).join(''):''}
+      ${e.herOrgasm==='Yes'?`<span class="chip hl">Her: ${e.herOrgasmCount||1}×</span>`:''}
+      ${e.myOrgasm==='Yes'?`<span class="chip hl">Finished ✓</span>`:''}
+    </div>
+    ${e.notes?`<div class="card-note">${e.notes.substring(0,100)}${e.notes.length>100?'…':''}</div>`:''}
+  </div>`).join('')}`:''}
+```
+
+`;
+}
+
+async function addNewPosition(){
+const inp=document.getElementById(‘il-new-position’);
+const val=inp.value.trim();if(!val)return;
+await addCustomPosition(val);inp.value=’’;
+const btn=document.createElement(‘button’);
+btn.className=‘pill selected’;btn.textContent=val;
+btn.onclick=()=>toggleMultiSelect(btn,selectedPositions);
+document.getElementById(‘il-positions-group’).appendChild(btn);
+selectedPositions.push(val);showToast(‘Position added’);
+}
+
+async function addNewToy(){
+const inp=document.getElementById(‘il-new-toy’);
+const val=inp.value.trim();if(!val)return;
+await addCustomToy(val);inp.value=’’;
+const btn=document.createElement(‘button’);
+btn.className=‘pill selected’;btn.textContent=val;
+btn.onclick=()=>toggleMultiSelect(btn,selectedToys);
+document.getElementById(‘il-toys-group’).appendChild(btn);
+selectedToys.push(val);showToast(‘Toy added’);
+}
+
+async function saveIntimacyEntry(){
+const now=new Date();
+const cs=getCycleStatus(now.toISOString());
+const entry={
+date:now.toISOString(),
+dateLabel:now.toLocaleDateString(‘en-US’,{weekday:‘short’,month:‘short’,day:‘numeric’}),
+timeLabel:now.toLocaleTimeString(‘en-US’,{hour:‘numeric’,minute:‘2-digit’}),
+phase:cs?cs.phase:’—’,
+cycleDay:cs?cs.cycleDay:’—’,
+duration:+document.getElementById(‘il-duration’).value||0,
+initiation:getPills(‘il-pg-initiation’).join(’, ‘)||’—’,
+arousal:+document.getElementById(‘il-arousal’).value,
+herMoodBefore:getPills(‘il-pg-her-mood-before’).join(’, ‘)||’—’,
+protection:intimacyYNState[‘protection’]||’—’,
+activities:selectedActivities,
+positions:selectedPositions.join(’, ‘)||’—’,
+toys:selectedToys.join(’, ‘)||’—’,
+herOrgasm:intimacyYNState[‘herOrgasm’]||’—’,
+herOrgasmCount:intimacyYNState[‘herOrgasm’]===‘Yes’?+document.getElementById(‘il-her-orgasm-count’).value:0,
+herOrgasmIntensity:intimacyYNState[‘herOrgasm’]===‘Yes’?+document.getElementById(‘il-her-orgasm-intensity’).value:0,
+herOrgasmType:getPills(‘il-pg-orgasm-type’).join(’, ‘)||’—’,
+myOrgasm:intimacyYNState[‘myOrgasm’]||’—’,
+myPotency:intimacyYNState[‘myOrgasm’]===‘Yes’?+document.getElementById(‘il-my-potency’).value:0,
+myVolume:intimacyYNState[‘myOrgasm’]===‘Yes’?+document.getElementById(‘il-my-volume’).value:0,
+depositLocation:selectedDeposit.join(’, ‘)||’—’,
+herMoodAfter:getPills(‘il-pg-her-mood-after’).join(’, ‘)||’—’,
+myMoodAfter:getPills(‘il-pg-my-mood-after’).join(’, ‘)||’—’,
+rating:intimacyStars,
+notes:document.getElementById(‘il-notes’).value,
+mediaContext:getPills(‘il-pg-media-context’).join(’, ‘)||’—’,
+mediaNotes:document.getElementById(‘il-media-notes’).value,
+mediaCount:intimacyMediaFiles.filter(Boolean).length,
+mediaFiles:intimacyMediaFiles.filter(Boolean).map(m=>({url:m.url,type:m.type,name:m.name})),
+};
+await addIntimacy(entry);
+showToast(‘Entry saved ♥’);
+intimacyMediaFiles=[];
+syncToServer();
+renderIntimacyView();
+}
+
+async function openIntimacyModal(id){
+const all=await getAllIntimacy();
+const e=all.find(x=>x.id===id);if(!e)return;
+const row=(k,v)=>`<div class="modal-row"><span class="mkey">${k}</span><span class="mval">${v||'—'}</span></div>`;
+const sec=t=>`<div class="modal-section">${t}</div>`;
+document.getElementById(‘modal-body’).innerHTML=`
+<h2>${e.dateLabel}</h2>
+<div class="modal-subtitle">${e.timeLabel}${e.duration?’ · ‘+e.duration+’ min’:’’}</div>
+${sec(‘Context’)}${row(‘Phase’,e.phase)}${row(‘Cycle Day’,e.cycleDay)}${row(‘Initiated’,e.initiation)}${row(‘Her Arousal’,e.arousal+’/5’)}${row(‘Her Mood Before’,e.herMoodBefore)}${row(‘Protection’,e.protection)}
+${e.activities&&Object.keys(e.activities).length?sec(‘Activities’)+Object.entries(e.activities).map(([key,data])=>{
+const name=data.activity||key;
+const details=Object.entries(data).filter(([k])=>k!==‘activity’).map(([k,v])=>row(k.replace(/_/g,’ ‘),v)).join(’’);
+return ‘<div style="margin-bottom:10px"><div style="font-size:0.8rem;font-weight:500;color:var(--rose-deep);margin-bottom:4px">’+name+’</div>’+details+’</div>’;
+}).join(’’):’’}
+${sec(‘Positions’)}${row(‘Used’,e.positions)}
+${sec(‘Toys’)}${row(‘Used’,e.toys)}
+${sec(‘Her Orgasm’)}${row(‘Orgasm’,e.herOrgasm)}${e.herOrgasm===‘Yes’?row(‘Count’,e.herOrgasmCount+‘x’)+row(‘Intensity’,e.herOrgasmIntensity+’/5’)+row(‘Type’,e.herOrgasmType):’’}
+${sec(‘My Finish’)}${row(‘Finished’,e.myOrgasm)}${e.myOrgasm===‘Yes’?row(‘Potency’,e.myPotency+’/5’)+row(‘Volume’,e.myVolume+’/5’)+row(‘Deposit’,e.depositLocation):’’}
+${sec(‘After’)}${row(‘Her Mood After’,e.herMoodAfter)}${row(‘My Mood After’,e.myMoodAfter)}${row(‘Rating’,e.rating>0?‘♥’.repeat(e.rating):’—’)}
+${e.notes?sec(‘Notes’)+row(‘Notes’,e.notes):’’}
+
+```
+<button class="btn-delete" onclick="confirmDeleteIntimacy(${e.id})">Delete this entry</button>`;
+```
+
+document.getElementById(‘modal-overlay’).classList.add(‘open’);
+}
+
+async function confirmDeleteIntimacy(id){
+if(!confirm(‘Delete this entry?’))return;
+await deleteIntimacy(id);
+document.getElementById(‘modal-overlay’).classList.remove(‘open’);
+showToast(‘Deleted’);renderIntimacyView();syncToServer();
+}
+
+// ── NAV ──────────────────────────────────────────────────────────────
+function switchView(name,btn){
+document.querySelectorAll(’.view’).forEach(v=>v.classList.remove(‘active’));
+document.querySelectorAll(’.nav button’).forEach(b=>b.classList.remove(‘active’));
+document.getElementById(‘view-’+name).classList.add(‘active’);
+if(btn)btn.classList.add(‘active’);
+if(name===‘history’)renderHistory();
+if(name===‘trends’)renderTrends();
+if(name===‘summary’)renderSummary();
+if(name===‘mood’)renderMoodPage();
+if(name===‘intimacy’)renderIntimacyView();
+if(name===‘settings’){
+renderSettingsSavedState();
+renderSettingsCycleDetail();
+}
+}
+
+function drawMoodCycleChart(moods){
+const wrap=document.getElementById(‘mood-cycle-chart-wrap’);
+if(!wrap)return;
+const sorted=moods.filter(m=>m.wellbeing).sort((a,b)=>new Date(a.date)-new Date(b.date));
+if(sorted.length<2){wrap.innerHTML=’<p style="font-size:0.76rem;color:var(--muted);text-align:center;padding:12px 0">Need at least 2 mood entries</p>’;return;}
+const W=320,H=150,PL=28,PR=10,PT=8,PB=26,cW=W-PL-PR,cH=H-PT-PB,n=sorted.length;
+const xPos=i=>PL+(n===1?cW/2:(i/(n-1))*cW);
+const yPos=v=>PT+cH-((v||0)/5)*cH;
+const PC={‘Menstrual / Early Follicular’:’#d4a0a0’,‘Follicular’:’#a0c4a0’,‘Ovulatory’:’#c4b870’,‘Luteal’:’#a0a8c4’,‘Placebo Week’:’#b0b0b0’};
+const grid=[0,1,2,3,4,5].map(t=>{const y=(PT+cH-(t/5)*cH).toFixed(1);return ‘<line x1="'+PL+'" y1="'+y+'" x2="'+(W-PR)+'" y2="'+y+'" stroke="#e0d0c8" stroke-width="1"/><text x="'+(PL-3)+'" y="'+(+y+3).toFixed(1)+'" text-anchor="end" font-size="9" fill="#b09090">’+t+’</text>’;}).join(’’);
+let bands=’’; if(n>=2){let lp=sorted[0].phase,si=0;sorted.forEach((m,i)=>{if(m.phase!==lp||i===n-1){const ei=i===n-1?i:i-1;const c=PC[lp]||‘transparent’;bands+=’<rect x="'+xPos(si).toFixed(1)+'" y="'+PT+'" width="'+Math.max(0,xPos(ei)-xPos(si)).toFixed(1)+'" height="'+cH+'" fill="'+c+'" opacity="0.1"/>’;lp=m.phase;si=i;}});}
+const wbPts=sorted.map((m,i)=>(i===0?‘M’:‘L’)+xPos(i).toFixed(1)+’,’+yPos(m.wellbeing).toFixed(1)).join(’ ‘);
+const slPts=sorted.some(m=>m.sleep)?sorted.map((m,i)=>(i===0?‘M’:‘L’)+xPos(i).toFixed(1)+’,’+yPos(m.sleep||0).toFixed(1)).join(’ ‘):’’;
+const aD=wbPts+’ L’+xPos(n-1).toFixed(1)+’,’+(PT+cH).toFixed(1)+’ L’+PL+’,’+(PT+cH).toFixed(1)+’ Z’;
+const step=Math.max(1,Math.ceil(n/6));
+const xL=sorted.map((m,i)=>{if(i%step!==0&&i!==n-1)return’’;const d=new Date(m.date);return ‘<text x="'+xPos(i).toFixed(1)+'" y="'+(H-8)+'" text-anchor="middle" font-size="9" fill="#b09090">’+(d.getMonth()+1)+’/’+d.getDate()+’</text>’;}).join(’’);
+const dots=sorted.map((m,i)=>’<circle cx="'+xPos(i).toFixed(1)+'" cy="'+yPos(m.wellbeing).toFixed(1)+'" r="3.5" fill="#7ab8b0" stroke="white" stroke-width="1.5"/>’).join(’’);
+wrap.innerHTML=’<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;overflow:visible">’+bands+grid+’<path d="'+aD+'" fill="#7ab8b0" opacity="0.1"/><path d="'+wbPts+'" fill="none" stroke="#7ab8b0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>’+(slPts?’<path d="'+slPts+'" fill="none" stroke="#a0a8c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 2"/>’ :’’)+dots+xL+’</svg>’;
+}
+
+function drawMoodHeatmap(moods){
+const wrap=document.getElementById(‘mood-heatmap-wrap’);
+if(!wrap)return;
+const phases=[‘Menstrual / Early Follicular’,‘Follicular’,‘Ovulatory’,‘Luteal’,‘Placebo Week’];
+const pL={‘Menstrual / Early Follicular’:‘Mens.’,‘Follicular’:‘Follic.’,‘Ovulatory’:‘Ovul.’,‘Luteal’:‘Luteal’,‘Placebo Week’:‘Placebo’};
+const pC={‘Menstrual / Early Follicular’:’#d4a0a0’,‘Follicular’:’#a0c4a0’,‘Ovulatory’:’#c4b870’,‘Luteal’:’#a0a8c4’,‘Placebo Week’:’#b0b0b0’};
+const ms=new Set();
+moods.forEach(m=>{if(m.mood&&m.mood!==’–’&&m.mood!==’—’)m.mood.split(’, ‘).forEach(v=>ms.add(v));});
+if(!ms.size){wrap.innerHTML=’<p style="font-size:0.76rem;color:var(--muted)">No mood data yet</p>’;return;}
+const freq={};
+ms.forEach(mood=>{freq[mood]={};phases.forEach(ph=>{const tot=moods.filter(m=>m.phase===ph).length;const cnt=moods.filter(m=>m.phase===ph&&m.mood&&m.mood.includes(mood)).length;freq[mood][ph]=tot?Math.round(cnt/tot*100):0;});});
+const top=[…ms].sort((a,b)=>phases.reduce((s,p)=>s+freq[b][p],0)-phases.reduce((s,p)=>s+freq[a][p],0)).slice(0,12);
+let rows=top.map(mood=>{’<tr><td style="padding:3px 6px;color:var(--text-light);white-space:nowrap">’+mood+’</td>’+phases.map(ph=>{const pct=freq[mood][ph];const op=pct?(pct/100*0.75+0.1).toFixed(2):‘0.04’;return ‘<td style="text-align:center;padding:2px 3px"><div style="background:'+pC[ph]+';opacity:'+op+';border-radius:4px;padding:2px;font-size:0.62rem;color:var(--text);font-weight:'+(pct>25?600:400)+';text-align:center">’+(pct?pct+’%’:’’)+’</div></td>’;}).join(’’)+’</tr>’;}).join(’’);
+let tHead=’<thead><tr><th style="text-align:left;padding:3px 6px;color:var(--muted);font-weight:500">Mood</th>’+phases.map(ph=>’<th style="text-align:center;padding:3px 3px;color:var(--muted);font-weight:500;font-size:0.6rem">’+pL[ph]+’</th>’).join(’’)+’</tr></thead>’;
+let tRows=top.map(mood=>’<tr><td style="padding:3px 6px;color:var(--text-light);white-space:nowrap">’+mood+’</td>’+phases.map(ph=>{const pct=freq[mood][ph];const op=pct?(pct/100*0.75+0.1).toFixed(2):‘0.04’;return ‘<td style="text-align:center;padding:2px 3px"><div style="background:'+pC[ph]+';opacity:'+op+';border-radius:4px;padding:2px;font-size:0.62rem;color:var(--text);font-weight:'+(pct>25?600:400)+';text-align:center">’+(pct?pct+’%’:’’)+’</div></td>’;}).join(’’)+’</tr>’).join(’’);
+wrap.innerHTML=’<table style="width:100%;border-collapse:collapse;font-size:0.66rem">’+tHead+’<tbody>’+tRows+’</tbody></table>’;
+}
+
+function showToast(msg){const t=document.getElementById(‘toast’);t.textContent=msg;t.classList.add(‘show’);setTimeout(()=>t.classList.remove(‘show’),2500);}
+
+// ── INIT ─────────────────────────────────────────────────────────────
+openDB().then(async ()=>{
+updateCycleBanner();
+updatePumpBanners();
+await renderMoodPage();
+}).catch(err=>{
+console.error(“Startup error:”, err);
+const msg = err && err.message ? err.message : String(err);
+if(msg.includes(“version”)||msg.includes(“blocked”)||msg.includes(“Version”)){
+try{ indexedDB.deleteDatabase(“SessionsDB_v8”); }catch(e){}
+setTimeout(()=>location.reload(),800);
+return;
+}
+document.body.innerHTML = “<div style='padding:48px 24px;font-family:sans-serif;text-align:center;background:#faf6f1;min-height:100vh'>”
++ “<div style='font-size:2rem;margin-bottom:16px'>⚠️</div>”
++ “<h2 style='color:#c47a6a;font-weight:400;margin-bottom:12px'>Startup error</h2>”
++ “<p style='color:#9e8880;margin-bottom:24px;font-size:0.9rem'>”+msg+”</p>”
++ “<button onclick='location.reload()' style='padding:14px 28px;background:#c47a6a;color:white;border:none;border-radius:14px;font-size:0.9rem;cursor:pointer;font-family:sans-serif'>Reload App</button>”
++ “</div>”;
+});
+</script>
+
+</body>
+</html>
